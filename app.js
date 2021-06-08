@@ -19,6 +19,7 @@ app.set("view engine","ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 // app.use(bodyParser.json());
 
+
 // mongoose.connect("mongodb://localhost/exposys");
 mongoose.connect("mongodb+srv://video-chat-app:aditya02@video-chat-app.zpjqs.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",function(res,req){
     console.log("Database Connected");
