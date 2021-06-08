@@ -53,7 +53,7 @@ app.use(function(req,res,next){
 
 app.use(methodOverride("_method"));
 
-const { findById, db } = require("./models/users.js");
+// const { findById, db } = require("./models/users.js");
 
 app.use(express.static(__dirname + "/public"))
 
