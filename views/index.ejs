@@ -42,7 +42,7 @@
             window.open("/call/"+callId+"/?recievingUser="+userHandlename+"&callingUser="+currentHandlename)
         }else{
             socket.emit('decline-call',callId)
-        }
+        } 
     })
 
 </script>
@@ -89,6 +89,10 @@
                 socket.on('could-not-connect-call',function(message){
                         alert(message)
                     })
+
+                    socket.on('disconnect', function() {
+    console.log('disconnect');
+});
             </script>
         <%}%> 
 </body>

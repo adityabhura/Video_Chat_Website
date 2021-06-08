@@ -303,7 +303,10 @@ function checkAuthorisation(req,res,next){
    } 
    }
 
+
+
 io.on('connect',function(socket){
+
     console.log("User joined with Socket Id",socket.id);
     
     socket.on('store-socket-id-in-db',function(currentUserId){
