@@ -13,9 +13,9 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         var callId="<%=callId%>"
-        var callerHandlename="<%=query.callerHandlename%>" 
+        var callerHandlename="<%=query.callingUser%>" 
         var name="<%= currentUser.name %>"
-        var recieverHandlename=  "<%=query.reciverHandlename%>" 
+        var recieverHandlename=  "<%=query.recievingUser%>" 
         var portForPeer="<%= portForPeer %>";
     </script>
     <script src="/socket.io/socket.io.js" ></script>
@@ -175,7 +175,7 @@ navigator.mediaDevices.getUserMedia({
     })
 
     socket.on('user-connected', (userId,name) => {
-    alert(name +"joined");
+    alert(name +" joined");
       console.log("User connected with userId",userId)
         connectToNewUser(userId, stream);
     })
@@ -192,13 +192,14 @@ navigator.mediaDevices.getUserMedia({
       })
 }).catch(function(err){
     alert(err);
+    window.close();
 })
 
 
 
 peer.on('open', id => {
     console.log("Opening peer")
-    socket.emit('joined-call',callId,id,name);
+    socket.emit('joined-call',callId,id,name,recieverHandlename,callerHandlename);
 });
 
 

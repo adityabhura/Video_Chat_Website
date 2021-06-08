@@ -534,16 +534,21 @@ io.on('connect',function(socket){
                    var callId=uuidv4();
                    callIds.create({callId:callId});
                    socket.emit('enter-call',userHandlename,currentHandlename,callId)
-                   socket.broadcast.to(user.handlename).emit('recieving-call',userHandlename,currentHandlename,callId)
+                //    socket.broadcast.to(user.handlename).emit('recieving-call',userHandlename,currentHandlename,callId)
                }
            }
        })
    })
 
-   socket.on('joined-call',function(callId,peerId,name){
+   socket.on('joined-call',function(callId,peerId,name,recieverHandlename,callerHandlename){
     console.log("Join call on event",socket.id)
        socket.join(callId);
        var numberOfUsers=io.sockets.adapter.rooms.get(callId).size;
+       //Send reciever call alert after the caller has joined th call
+       if(numberOfUsers==1){
+           console.log(recieverHandlename)
+        socket.broadcast.to(recieverHandlename).emit('recieving-call',recieverHandlename,callerHandlename,callId)
+       }
        if(numberOfUsers<=2){
         socket.broadcast.to(callId).emit("user-connected", peerId,name);
        }else{

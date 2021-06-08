@@ -37,12 +37,13 @@
         })
 
     socket.on('recieving-call',function(userHandlename,currentHandlename,callId){
-        var answer=confirm(currentHandlename+" is calling you. \n Click OK to answer or Click Cancel to decline")
+        setTimeout(function(){var answer=confirm(currentHandlename+" is calling you. \n Click OK to answer or Click Cancel to decline")
         if(answer){
             window.open("/call/"+callId+"/?recievingUser="+userHandlename+"&callingUser="+currentHandlename)
         }else{
             socket.emit('decline-call',callId)
-        } 
+        }
+    }, 2500); 
     })
 
 </script>
