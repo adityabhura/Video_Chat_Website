@@ -115,7 +115,7 @@ app.post("/signup",isNotLoggedIn,function(req,res){
     Users.register(new Users({username:req.body.username,email:req.body.username,handlename:req.body.handlename,name:req.body.name,dateofbirth:req.body.dateofbirth}),req.body.password,function(err,user){
         if(err){
                 console.log(err);
-                res.send(err);
+                res.send("Error",err);
         }else{
             passport.authenticate("local")(req,res,function(){
             res.redirect("/profile/"+user.handlename);
