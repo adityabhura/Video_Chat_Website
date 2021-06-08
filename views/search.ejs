@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Friend</title>
+
+    <script>
+        var currentUserId="<%=currentUser._id%>"
+        var currentHandlename="<%=currentUser.handlename%>"
+        
+    </script>
+
+    <script src="/socket.io/socket.io.js" ></script>
+
+<script>
+    var socket=io()
+    function play(){
+        document.getElementById('chatAudio').play()
+    }
+    socket.on('connect',function(){
+        socket.emit('store-socket-id-in-db',currentUserId)
+    })
+
+    socket.on('friend-request-alert',function(handlename){
+    play();
+    alert('You recived a friend request from '+handlename); 
+    })
+
+    socket.on('friend-request-accepted-alert',function(handlename){
+    play();
+    alert(handlename+' accepted your friend request');      
+    })
+</script>
+
+</head>
+<body>
+    <audio id="chatAudio" >
+        <source src="https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3" type="audio/mpeg">
+    </audio>
+    Search By Handle Name
+    <input type="radio" placeholder="Handle Name" name="search" value="handlename" checked="checked"><br>
+    Search By Name (First Name + Last Name)
+    <input type="radio" placeholder="Name" name="search" value="name"><br>
+    <input type="text" placeholder="Handle Name" id="search-input">
+    <br><br><div id="result-list"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket=io();
+        var searchType = document.getElementsByName('search');
+        var searchInput=document.getElementById('search-input');
+        var resultList=document.getElementById('result-list');
+
+        searchType[0].addEventListener('click',function(){
+            searchInput.placeholder="Handle Name";
+            searchInput.value="";
+            resultList.innerHTML="";
+        })
+        searchType[1].addEventListener('click',function(){
+            searchInput.placeholder="Name";
+            searchInput.value="";
+            resultList.innerHTML="";
+        })
+       
+        searchInput.onkeyup = function(){
+            
+           if(searchInput.placeholder=='Name' && searchInput.value.trim().length>3){
+
+               socket.emit('search',{text:searchInput.value.trim(),type:'name'});
+
+               socket.on('search-results',function(data){
+                resultList.innerHTML="";
+                data.result.forEach(function(user) {
+                    var foundUser=document.createElement('a');
+                    foundUser.href="/profile/"+user.handlename
+                    foundUser.innerHTML=user.name + "<br>" + user.handlename + "<br><br>";
+                    resultList.append(foundUser);
+                    console.log(user.handlename)
+                });
+            })
+               
+           }
+           else if(searchInput.placeholder=='Handle Name' && searchInput.value.trim().length>3){
+            
+            searchInput.value=searchInput.value.toLowerCase();
+            
+            socket.emit('search',{text:searchInput.value.trim(),type:'handlename'});
+            
+            socket.on('search-results',function(data){
+                resultList.innerHTML="";
+                data.result.forEach(function(user) {
+                    var foundUser=document.createElement('a');
+                    foundUser.href="/profile/"+user.handlename
+                    foundUser.innerHTML=user.name + "<br>" + user.handlename + "<br><br>";
+                    resultList.append(foundUser);
+                    console.log(user.handlename)
+                });
+            })
+           }else if(searchInput.value.trim().length<=3){
+            resultList.innerHTML="";
+           }
+        }
+    </script>
+</body>
+</html>

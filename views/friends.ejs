@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends</title>
+    <script src="/socket.io/socket.io.js" ></script>
+    <script>
+        var currentUserId="<%=currentUser._id%>"
+        var currentHandlename="<%=currentUser.handlename%>"
+    </script>
+    <script>
+        var socket=io()
+        
+        function play(){
+            document.getElementById('chatAudio').play()
+        }
+        socket.on('connect',function(){
+            socket.emit('store-socket-id-in-db',currentUserId)
+        })
+
+        socket.on('friend-request-alert',function(handlename){
+        play();
+        alert('You recived a friend request from '+handlename); 
+        window.location.reload();   
+        })
+
+        socket.on('friend-request-cancel-alert',function(handlename){ 
+        window.location.reload();   
+        })
+
+        socket.on('friend-request-accepted-alert',function(handlename){
+        play();
+        alert(handlename+' accepted your friend request');    
+        window.location.reload();   
+        })
+
+        socket.on('reload-for-user-whoose-request-is-rejected',function() {   
+            window.location.reload(); 
+        })  
+    
+    </script>
+</head>
+<body>
+
+    <audio id="chatAudio" >
+        <source src="https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3" type="audio/mpeg">
+    </audio>
+
+    <h3>Friends</h3>
+    <%user.friends.forEach(function(friend){ %>
+        <%= friend.name%>-
+        <%= friend.handlename%><br>
+        <% }) %>
+
+        <h3>Friend Requests</h3>
+        <% if(!user.friendRequest.length){ %>
+        No Friend Requests
+        <% }else{ %>
+            <%user.friendRequest.forEach(function(friend){ %>
+                <%= friend.name%>-
+                <%= friend.handlename%><br>
+                
+                <br><button id="accept">Accept</button>
+                <button id="reject">Reject</button>
+
+            <script>
+                var userId="<%=friend._id %>"
+                document.getElementById('accept').addEventListener('click',function(){
+                    socket.emit('accept-friend-request',userId,currentUserId,currentHandlename)
+                    socket.emit('adding-friend-to-current-user',userId,currentUserId)
+                    socket.on('friend-request-accepted',function(status) {
+                        if(status){
+                            alert("Request Accepted")
+                            window.location.reload();
+                        }   
+                        
+                    })
+                })
+                var userHandlename="<%=user.handlename%>"
+                document.getElementById('reject').addEventListener('click',function(){
+                    socket.emit('remove-friend-request-from-user-database',userId,currentUserId,userHandlename)
+                    socket.on('friend-request-rejected-confirmation',function(status) {
+                        if(status){
+                            alert("Rejected Friend Request")
+                            window.location.reload();
+                        }   
+                        
+                    })
+                })
+            </script>
+
+            <% }) %>
+        <% } %>
+    
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profiles Page</title>
+    <script>
+        var userId="<%=user._id%>"
+        var currentUserId="<%=currentUser._id%>"
+        var currentHandlename="<%=currentUser.handlename%>"
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket=io()
+        function play(){
+            document.getElementById('chatAudio').play()
+        }
+        socket.on('connect',function(){
+            socket.emit('store-socket-id-in-db',currentUserId)
+        })
+
+        socket.on('friend-request-alert',function(handlename){
+        play();
+        alert('You recived a friend request from '+handlename); 
+        window.location.reload();   
+        })
+
+        socket.on('friend-request-cancel-alert',function(handlename){ 
+        window.location.reload();   
+        })
+
+        socket.on('friend-request-accepted-alert',function(handlename){
+        play();
+        alert(handlename+' accepted your friend request');    
+        window.location.reload();   
+        })
+
+        socket.on('reload-for-user-whoose-request-is-rejected',function() {   
+            window.location.reload(); 
+        })
+
+        socket.on('recieving-call',function(userHandlename,currentHandlename,callId){
+        var answer=confirm(currentHandlename+" is calling you. \n Click OK to answer or Click Cancel to decline")
+        if(answer){
+            window.open("/call/"+callId+"/?recievingUser="+userHandlename+"&callingUser="+currentHandlename)
+        }else{
+            socket.emit('decline-call',callId)
+        }
+    })
+    </script>
+</head>
+<body>
+    <audio id="chatAudio" >
+        <source src="https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3" type="audio/mpeg">
+    </audio>
+    THIS IS Profiles PAGE
+    <%= user %>
+    <% if(currentUser._id.equals(user._id)){%>
+       <br> <a href="/profile/<%=user.handlename%>/edit">Edit Profile</a>
+        <br>
+        <form action="/signout" method="POST">
+            <button type="submit">LOGOUT</button>
+        </form>
+    <%}else{%>
+
+       <% var index=currentUser.friends.indexOf(user._id); %>
+       <% if(index>-1){ %>
+                Friends
+            <% }else{ %>
+                
+                <!-- <% var y=false; %> -->
+                <!-- <% currentUser.friendRequest.forEach(function(id){ %>
+                  <%  if(user._id.equals(id)){ %>
+                    <%   y=true; %>
+                    <%   } %>
+                    <%  }) %> -->
+                    <% var y=currentUser.friendRequest.indexOf(user._id); %>
+                    <% if(y>-1){ %>
+                        Friend Request Recieved
+                        <br><button id="accept">Accept</button>
+                            <button id="reject">Reject</button>
+        
+                        <script>
+                            document.getElementById('accept').addEventListener('click',function(){
+                                socket.emit('accept-friend-request',userId,currentUserId,currentHandlename)
+                                socket.emit('adding-friend-to-current-user',userId,currentUserId)
+                                socket.on('friend-request-accepted',function(status) {
+                                    if(status){
+                                        alert("hello")
+                                        window.location.reload();
+                                    }   
+                                    
+                                })
+                            })
+                            var userHandlename="<%=user.handlename%>"
+                            document.getElementById('reject').addEventListener('click',function(){
+                                socket.emit('remove-friend-request-from-user-database',userId,currentUserId,userHandlename)
+                                socket.on('friend-request-rejected-confirmation',function(status) {
+                                    if(status){
+                                        alert("Rejected Friend Request")
+                                        window.location.reload();
+                                    }   
+                                    
+                                })
+                            })
+                        </script>
+        
+                       
+                   <% }else{ %>
+        
+                    <!-- <%var x=false;%>
+                    <%user.friendRequest.forEach(function(id){ %>
+                        <% if(currentUser._id.equals(id)){ %>
+                            <%x=true;%>
+                            <% } %>    
+                            <% })%> -->
+                            <% var x=user.friendRequest.indexOf(currentUser._id); %>
+                            <% if(x==-1){ %>
+                                <br> <button id="friend-request">Send Friend Request</button>
+                                <script>
+                                    // var socket=io('/');
+                                    
+                                    var friendRequestButton=document.getElementById('friend-request');
+                                    friendRequestButton.addEventListener('click',function(){
+                                        socket.emit('send-friend-request',userId,currentUserId,currentHandlename)
+                                    })
+                                    socket.on('friend-request-sent',function(status){
+                                        if(status){
+                                            alert('Friend Request Has Been Sent');
+                                            window.location.reload();
+                                        }else{
+                                            alert('Could not sent friend')
+                                        }
+                                    })
+                                </script>
+                            <% } else{ %>
+                                Friend Request Already Sent
+                                <br> <button id="remove-friend-request">Cancel Friend Request</button>
+                                <script>
+                                    // var socket=io('/');
+                                    
+                                    var cancelRequestButton=document.getElementById('remove-friend-request');
+                                    cancelRequestButton.addEventListener('click',function(){
+                                        socket.emit('cancel-friend-request',userId,currentUserId)
+                                    })
+                                    socket.on('friend-request-cancelled',function(status){
+                                        if(status){
+                                            alert('Friend Request Has Been cancelled');
+                                            window.location.reload();
+                                        }else{
+                                            alert('Could not cancel friend request')
+                                        }
+                                    })
+                                    </script>
+                             <% } %>
+        
+                             <%  }  %>
+
+         <% } %>
+       
+        <%}%>
+
+    <br><%=user._id%><br>
+    <%=currentUser._id%>
+    <br><%=user.socketId%>
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script>
+    var currentUserId="<%=currentUser._id%>"
+    var currentHandlename="<%=currentUser.handlename%>"   
+</script>
+<script src="/socket.io/socket.io.js" ></script>
+<script>
+    var socket=io()
+    function play(){
+        document.getElementById('chatAudio').play()
+    }
+    socket.on('connect',function(){
+        socket.emit('store-socket-id-in-db',currentUserId)
+    })
+
+    socket.on('friend-request-alert',function(handlename){
+    play();
+    alert('You recived a friend request from '+handlename); 
+    window.location.reload();   
+    })
+
+    socket.on('friend-request-accepted-alert',function(handlename){
+    play();
+    alert(handlename+' accepted your friend request');    
+    window.location.reload();   
+    })
+
+    socket.on('friend-request-cancel-alert',function(handlename){ 
+        window.location.reload();   
+        })
+
+    socket.on('recieving-call',function(userHandlename,currentHandlename,callId){
+        var answer=confirm(currentHandlename+" is calling you. \n Click OK to answer or Click Cancel to decline")
+        if(answer){
+            window.open("/call/"+callId+"/?recievingUser="+userHandlename+"&callingUser="+currentHandlename)
+        }else{
+            socket.emit('decline-call',callId)
+        }
+    })
+
+</script>
+<body>
+    <audio id="chatAudio" >
+        <source src="https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3" type="audio/mpeg">
+    </audio>
+    THIS WILL BE THE INDEX PAGE
+    <br>
+    <a href="/profile/<%=currentUser.handlename%>">View Profile</a>
+    <a href="/joinroom">Join a Video Chat room</a>
+    <a href="/searchfriend">Search For Friend</a>
+    <a href="/<%=currentUser.handlename%>/friends">Friends</a>
+    <form action="/signout" method="POST">
+        <button type="submit">Sign Out</button>
+    </form>  
+    <br>
+    <h3>
+        Notifications Box
+    </h3>
+        <%if(!currentUser.friendRequest.length){%>
+            No New Friend Request
+            <%}else{%>
+                <%=currentUser.friendRequest.length%> Friend Requests Pending
+            <%}%>
+    
+    <h3>       Online Users
+
+    </h3>
+        <%if(!currentUser.friends.length){%>
+            No friends
+        <%}else{%>
+            <%  friendsArray.forEach(function(friend){ %>
+                <button id="<%=friend.handlename%>" value="<%=friend.handlename%>" onclick="call(this.value)">Call</button>    
+                <%=friend.handlename %><br>
+            <% }) %>
+            <script>
+                function call(userHandlename){
+                    socket.emit('calling-user',userHandlename,currentHandlename)    
+                }
+                socket.on('enter-call',function(recieverHandlename,callerHandlename,callId){
+                        window.open("/call/"+callId+"/?recievingUser="+recieverHandlename+"&callingUser="+callerHandlename)
+                    })
+                socket.on('could-not-connect-call',function(message){
+                        alert(message)
+                    })
+            </script>
+        <%}%> 
+</body>
+</html>
