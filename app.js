@@ -582,7 +582,7 @@ io.on('connect',function(socket){
 
 
     socket.on("disconnect",function(reason){
-        console.log("User disconnecting "+reason)
+        console.log("User disconnecting "+reason+" " + socket.id)
     })
 })
 
