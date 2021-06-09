@@ -26,12 +26,12 @@
         }
         
         socket.on('call-declined-by-reciever',function(){
-           alert("Call Declined")
+           window.alert("Call Declined")
            window.close();
         })
 
         socket.on('limit-exceded-in-call-alert',function(){
-            alert('You are already on this call')
+            window.alert('You are already on this call')
             window.location.href="/abcdefghijklmnopqrstuvwyz";
         })
         
