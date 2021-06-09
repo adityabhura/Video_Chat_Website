@@ -158,6 +158,11 @@ navigator.mediaDevices.getUserMedia({
     video: true,
     audio: true
 }).then(stream => {
+    
+    //Calling the reciever only after camera is on 
+    socket.emit('make-the-recieving-call-event-emit')
+    
+    
     myVideoStream = stream;
     addVideoStream(myVideo, stream);
     console.log("Tik TIk")
@@ -173,6 +178,8 @@ navigator.mediaDevices.getUserMedia({
             video.remove();
         })
     })
+
+    
 
     socket.on('user-connected', (userId,name) => {
     alert(name +" joined");
@@ -191,7 +198,7 @@ navigator.mediaDevices.getUserMedia({
         connectToNewUser(userId, stream); 
       })
 }).catch(function(err){
-    alert(err);
+    alert("Your camera is not starting or you did not allow the site to use camera or microphone");
     window.close();
 })
 

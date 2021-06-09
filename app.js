@@ -547,7 +547,10 @@ io.on('connect',function(socket){
        //Send reciever call alert after the caller has joined th call
        if(numberOfUsers==1){
            console.log(recieverHandlename)
-        socket.broadcast.to(recieverHandlename).emit('recieving-call',recieverHandlename,callerHandlename,callId)
+           socket.on('make-the-recieving-call-event-emit',function(){
+            socket.broadcast.to(recieverHandlename).emit('recieving-call',recieverHandlename,callerHandlename,callId)
+           })
+       
        }
        if(numberOfUsers<=2){
         socket.broadcast.to(callId).emit("user-connected", peerId,name);
