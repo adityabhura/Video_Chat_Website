@@ -182,7 +182,7 @@ navigator.mediaDevices.getUserMedia({
     
 
     socket.on('user-connected', (userId,name) => {
-    alert(name +" joined");
+    window.alert(name +" joined");
       console.log("User connected with userId",userId)
         connectToNewUser(userId, stream);
     })
