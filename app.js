@@ -581,8 +581,8 @@ io.on('connect',function(socket){
    })
 
 
-    socket.on("disconnect",function(){
-        console.log("User disconnecting")
+    socket.on("disconnect",function(reason){
+        console.log("User disconnecting "+reason)
     })
 })
 

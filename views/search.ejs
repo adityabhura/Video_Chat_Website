@@ -14,25 +14,44 @@
 
     <script src="/socket.io/socket.io.js" ></script>
 
-<script>
-    var socket=io()
-    function play(){
-        document.getElementById('chatAudio').play()
-    }
-    socket.on('connect',function(){
-        socket.emit('store-socket-id-in-db',currentUserId)
-    })
 
-    socket.on('friend-request-alert',function(handlename){
-    play();
-    alert('You recived a friend request from '+handlename); 
-    })
+    <script>
+        var socket=io()
+        function play(){
+            document.getElementById('chatAudio').play()
+        }
+        socket.on('connect',function(){
+            socket.emit('store-socket-id-in-db',currentUserId)
+        })
+    
+        socket.on('friend-request-alert',function(handlename){
+        play();
+        alert('You recived a friend request from '+handlename); 
+        // window.location.reload();   
+        })
+    
+        socket.on('friend-request-accepted-alert',function(handlename){
+        play();
+        alert(handlename+' accepted your friend request');    
+        // window.location.reload();   
+        })
+    
+        // socket.on('friend-request-cancel-alert',function(handlename){ 
+        //     window.location.reload();   
+        //     })
+    
+        socket.on('recieving-call',function(userHandlename,currentHandlename,callId){
+            setTimeout(function(){var answer=confirm(currentHandlename+" is calling you. \n Click OK to answer or Click Cancel to decline")
+            if(answer){
+                window.open("/call/"+callId+"/?recievingUser="+userHandlename+"&callingUser="+currentHandlename)
+            }else{
+                socket.emit('decline-call',callId)
+            }
+        }, 1500); 
+        })
+    
+    </script>
 
-    socket.on('friend-request-accepted-alert',function(handlename){
-    play();
-    alert(handlename+' accepted your friend request');      
-    })
-</script>
 
 </head>
 <body>
@@ -45,9 +64,7 @@
     <input type="radio" placeholder="Name" name="search" value="name"><br>
     <input type="text" placeholder="Handle Name" id="search-input">
     <br><br><div id="result-list"></div>
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        var socket=io();
         var searchType = document.getElementsByName('search');
         var searchInput=document.getElementById('search-input');
         var resultList=document.getElementById('result-list');
