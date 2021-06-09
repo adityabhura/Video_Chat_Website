@@ -321,10 +321,15 @@ io.on('connect',function(socket){
                 socket.join(user.handlename)
                 user.save();
 
-                socket.on("disconnect",function(){
-                    user.socketId="";
-                    user.save();
-                    console.log("qwewvhuearbnuv")
+                socket.on("disconnect",function(reason){
+                    if(reason==='ping timeout'){
+                        console.log('ping timeout qwertyuiop')
+                    }else{
+                        user.socketId="";
+                        user.save();
+                        console.log("qwewvhuearbnuv")
+                    }
+                    
                 })
 
                 }
