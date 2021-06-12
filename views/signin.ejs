@@ -4,15 +4,87 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Sign In</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body{
+            background-color: #17a2b8;
+        }
+        .far,.fas{
+            color:#17a2b8;
+        }
+        #form-color{
+            background-color: #EAEAEA;
+            border-radius: 2%;
+        }
+        .mt-4, .my-4 {
+    margin-top: 5rem!important;
+}
+    </style>
 </head>
 <body>
-    THIS WILL BE THE LOGIN PAGE
-    <form action="/signin" method="POST">
-        <input type="email" name="username" placeholder="Email" required>
-        <input type="password" name="password" placeholder="password" required>
-        <button type="reset">Reset</button>
-        <button type="submit">Submit</button>
-    </form>  
+    <!-- Nav bar code starts here -->
+    <nav class="navbar navbar-expand-md navbar-custom" style="background-color: #EAEAEA;">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-video"></i>
+            Video-Chat
+          </a>
+
+            <i class="fas fa-bars navbar-toggler-icon navbar-toggler"  type="button" data-toggle="collapse" data-target="#collapsibleNavbar"></i>
+         
+          <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="nav navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Sign In</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/signup">Sign Up</a>
+                  </li>
+            </ul>
+        </div>         
+      </nav>
+      <!-- Nav bar code ends here -->
+
+    <!-- Form container starts here -->
+    <div class="container">
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-5">
+                <form class="text-center border border-light p-5" id="form-color" action="/signin" method="POST">
+                    <p class="h4 mb-4" style="color:#17a2b8;">Sign in</p>
+                    <!-- Email -->
+                    <div class="input-group mb-4">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text" id="basic-addon1"><i class="far fa-envelope""></i></span>
+                        </div>
+                        <input type="email" name="username" placeholder="Email" required  class="form-control" aria-describedby="basic-addon1"> 
+                      </div>
+                    
+                    <!-- Password -->      
+                    <div class="input-group mb-4">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text" id="basic-addon1"><i class="fas fa-key"></i></span>
+                        </div>
+                        <input type="password" name="password" placeholder="Password" required class="form-control"> 
+                      </div>
+                      
+                    <!-- Sign in button -->
+                    <button class="btn btn-info btn-block my-3" type="submit">Sign in</button>
+                    
+                    <!-- Register -->
+                    <p>Not a member?
+                        <a href="/signup">Register</a>
+                    </p>
+                </form>
+    
+            </div>
+        </div>
+    </div>
+    <!-- Form container ends here -->
+
 </body>
 </html>

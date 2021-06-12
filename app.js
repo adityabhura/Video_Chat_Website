@@ -25,6 +25,15 @@ mongoose.connect("mongodb+srv://video-chat-app:aditya02@video-chat-app.zpjqs.mon
     console.log("Database Connected");
 });
 
+// mongoose.connect("mongodb+srv://VideoChatApp:SumanSunil@303@videochatapp.1cvrt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",function(res,req){
+//     console.log("Database Connected");
+// });
+
+// mongoose.connect("mongodb+srv://video-chat-app:ankita2001@cluster0.hgets.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",function(res,req){
+//    console.log("Database Connected");
+//  });
+
+
 
 var Users=require("./models/users.js");;
 // var {findById,db}=mongoose.model("Users",User);
@@ -112,7 +121,7 @@ app.get("/signup",isNotLoggedIn,function(req,res){
 })
 
 app.post("/signup",isNotLoggedIn,function(req,res){
-    Users.register(new Users({username:req.body.username,email:req.body.username,handlename:req.body.handlename,name:req.body.name,dateofbirth:req.body.dateofbirth}),req.body.password,function(err,user){
+    Users.register(new Users({username:req.body.username,email:req.body.username,handlename:req.body.handlename,name:req.body.name}),req.body.password,function(err,user){
         if(err){
                 console.log(err);
                 res.send("Error",err);
@@ -343,31 +352,38 @@ io.on('connect',function(socket){
         console.log("qwertyuiuoipgavrngjrgnqg")
     })
 
-    /****Socket.io code for checking unique handlename and username starts here****/
+    /****** Socket.io code for checking unique handlename and username starts here ******/
+    //This event will check weather the username send from client side javascript is  already present in database or not 
     socket.on('checkUsername',function(data){
         Users.findOne({username:data.username},function(err,user){
             if(user){
                 console.log(user)
+                //This event will send true to client side if the username that came from client side is present in the database 
                 socket.emit('alertForUsername',{present:true})
             }else{
                 console.log("No")
+                //This event will send false to client side if the username that came from client side is not present in the database 
                 socket.emit('alertForUsername',{present:false})
             }
         })
     })
 
+    //This event will check weather the handlename send from client side javascript is  already present in database or not 
     socket.on('checkHandlename',function(data){
         Users.findOne({handlename:data.handlename},function(err,user){
             if(user){
                 console.log(user)
+                //This event will send true to client side if the handlename that came from client side is present in the database 
                 socket.emit('alertForHandlename',{present:true})
             }else{
                 console.log("No")
+                 //This event will send false to client side if the handlename that came from client side is not present in the database
                 socket.emit('alertForHandlename',{present:false})
             }
         })
     })
-    /****Socket.io code for checking unique handlename and username ends here****/
+
+    /****** Socket.io code for checking unique handlename and username ends here ******/
 
 
     /****Socket.io code for searching users starts here****/

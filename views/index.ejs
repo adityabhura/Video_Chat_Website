@@ -4,97 +4,354 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<script>
-    var currentUserId="<%=currentUser._id%>"
-    var currentHandlename="<%=currentUser.handlename%>"   
-</script>
-<script src="/socket.io/socket.io.js" ></script>
-<script>
-    var socket=io()
-    function play(){
-        document.getElementById('chatAudio').play()
-    }
-    socket.on('connect',function(){
-        socket.emit('store-socket-id-in-db',currentUserId)
-    })
-
-    socket.on('friend-request-alert',function(handlename){
-    play();
-    alert('You recived a friend request from '+handlename); 
-    window.location.reload();   
-    })
-
-    socket.on('friend-request-accepted-alert',function(handlename){
-    play();
-    alert(handlename+' accepted your friend request');    
-    window.location.reload();   
-    })
-
-    socket.on('friend-request-cancel-alert',function(handlename){ 
-        window.location.reload();   
-        })
-
-    socket.on('recieving-call',function(userHandlename,currentHandlename,callId){
-        setTimeout(function(){var answer=confirm(currentHandlename+" is calling you. \n Click OK to answer or Click Cancel to decline")
-        if(answer){
-            window.open("/call/"+callId+"/?recievingUser="+userHandlename+"&callingUser="+currentHandlename)
-        }else{
-            socket.emit('decline-call',callId)
+    <title>Video-Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="/socket.io/socket.io.js" ></script>
+        <script>
+            var socket=io()
+        </script>
+        <script>
+            var currentUserId="<%=currentUser._id%>"
+            var currentHandlename="<%=currentUser.handlename%>"   
+        </script>
+    <style>
+        body{
+            background-color: #17a2b8;
         }
-    }, 1500); 
-    })
+        .dropdown-menu{
+            left:-95px;
+        }
+        .dropdown-item{
+            color:#007bff;
+        }
 
-</script>
+        #right-side{
+            height:calc(100vh - 56px);
+        }
+        #friend-list-div{
+            height: 90%; 
+            position: relative;
+            top:5%;
+            
+        }
+        #friend-list-container{
+            height: 100%;
+            background-color: #EAEAEA;
+            margin-right:6%; 
+            margin-left:0%;
+            margin-top: 2%;
+            border:solid;
+            border-color:white;
+            overflow-y: auto;
+            text-align:justify;
+        }
+        
+        #left-side{
+            height:calc(100vh - 56px);
+        }
+        #notification-div{
+            height:30%;
+        }
+        #notification-container{
+            background: #EAEAEA;
+            position: relative;
+            height: 80%;
+            top: 10%;
+            margin: 2%;
+            border: solid;
+            border-color: white;
+            border-width: 2px;
+        }
+        #room-form-div{
+            height:70%;
+        }
+        #join-room-form-container{
+            background: #EAEAEA;
+            position: relative;
+            height: 90%;
+            margin: 2%;
+            border: solid;
+            border-color: white;
+            border-width: 2px; 
+        }
+        #join-room-buttons-div{
+            height: calc(100% - 56px); 
+            display: flex;
+            align-items: center;
+        }
+        @media only screen and (max-width: 768px){
+            #left-side{
+            height:auto;
+            }
+            #notification-div{
+            height: auto;
+            
+            }
+            #room-form-div{
+                height:auto;
+            }
+            #join-room-buttons-div {
+                height: auto;
+            }   
+            #right-side{
+                height: auto;
+            }
+            #friend-list-div{
+                height: auto;
+            }
+            #friend-list-container{
+                height: auto; 
+                margin: 2%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/modal.css">
+</head>
 <body>
+
+    <!-- <button id="myBtn">Open Modal</button> -->
+    <!--Modal alert box code starts here-->
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+          <!-- <span class="close">&times;</span> -->
+            <h5 id="alertHead" style="color: #17a2b8;"></h5>
+            <p id="alertMessage" style="color: #17a2b8;"></p>
+            <button id="ok" class="btn btn-info btn-block" style="width:50%;position:relative;left: 25%; display: none;"></button>
+            <button id="no" class="btn btn-danger btn-block my-3" style="width:50%;position:relative;left: 25%; display: none;"></button>
+        </div>     
+    </div>
+    <!--Modal alert box code starts here--> 
+    <!--Modal alert box script tag--> 
+    <script src="./modal.js"></script> 
+    
+
     <audio id="chatAudio" >
         <source src="https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3" type="audio/mpeg">
     </audio>
-    THIS WILL BE THE INDEX PAGE
-    <br>
-    <a href="/profile/<%=currentUser.handlename%>">View Profile</a>
-    <a href="/joinroom">Join a Video Chat room</a>
-    <a href="/searchfriend">Search For Friend</a>
-    <a href="/<%=currentUser.handlename%>/friends">Friends</a>
-    <form action="/signout" method="POST">
-        <button type="submit">Sign Out</button>
-    </form>  
-    <br>
-    <h3>
-        Notifications Box
-    </h3>
-        <%if(!currentUser.friendRequest.length){%>
-            No New Friend Request
-            <%}else{%>
-                <%=currentUser.friendRequest.length%> Friend Requests Pending
-            <%}%>
-    
-    <h3>       Online Users
 
-    </h3>
-        <%if(!currentUser.friends.length){%>
-            No friends
-        <%}else{%>
-            <%  friendsArray.forEach(function(friend){ %>
-                <button id="<%=friend.handlename%>" value="<%=friend.handlename%>" onclick="call(this.value)">Call</button>    
-                <%=friend.handlename %><br>
-            <% }) %>
-            <script>
-                function call(userHandlename){
-                    socket.emit('calling-user',userHandlename,currentHandlename)    
+    <!-- Nav bar code starts here -->
+    <nav class="navbar navbar-expand-md navbar-custom" style="background-color: #EAEAEA;">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-video"></i>
+            Video-Chat
+        </a>
+
+            <i class="fas fa-bars navbar-toggler-icon navbar-toggler"  type="button" data-toggle="collapse" data-target="#collapsibleNavbar"></i>
+         
+          <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="nav navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/searchfriend">Search for friends</a>
+                  </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/<%=currentUser.handlename%>/friends">My friends</a>
+                  </li>
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-user-circle"></i>
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink" style="background-color:#EAEAEA;">
+                          <!-- My profile -->
+                        <a class="dropdown-item" href="/profile/<%=currentUser.handlename%>">My Profile</a>
+                        <!-- Sign Out -->
+                        <form action="/signout" method="POST" class="dropdown-item">
+                            <button type="submit" style="background-color:transparent; border:none; color:#007bff; padding: 0;">Sign Out</button>
+                        </form> 
+                      </div>
+                  </li>
+            </ul>
+        </div>         
+      </nav>
+      <!-- Nav bar code ends here -->
+
+      <!--Body code except nav bar and modal starts here-->
+      <div class="row no-gutters" style="width: 100%;">
+        <!--Left Side code starts here-->
+        <div class="col-md-9" style="background-color:transparent;" id="left-side">
+            <!--Notification Div code starts here-->
+            <div class="row no-gutters"  id="notification-div">
+                <div class="container-md" id="notification-container">
+                    <h1 style="color: #007bff;">Notifications</h1>
+                        <%if(!currentUser.friendRequest.length){%>
+                            <p style="color: #007bff;">No New Friend Request</p> 
+                        <%}else{%>
+                            <%=currentUser.friendRequest.length%> Friend Requests Pending
+                        <%}%>
+                </div>  
+            </div>
+            <!--Notification Div code ends here-->
+
+            <!--Room Div code starts here-->
+            <div class="row no-gutters" id="room-form-div">
+                <div class="container-md" id="join-room-form-container">
+                    <h1 style="color: #007bff;">Video Chat Room</h1>
+                    <div id="join-room-buttons-div">
+                        <div style="width:100%">
+                            <div class="row no-gutters justify-content-md-center">
+                                <div class="col-md-auto">
+                                    <center><a href="/room" style="color: white; text-decoration: none;"><button class="btn btn-info btn-block my-3">Create a new Video Chat Room</button> </a> </center> 
+                                </div> 
+                            </div>
+                            <div class="row no-gutters justify-content-md-center">
+                                <div class="col-md-auto">
+                                   <center> <h3 style="color: #007bff;">OR</h3> </center>
+                                </div>               
+                            </div>
+                            <div class="row no-gutters justify-content-md-center">
+                                <div class="col-md-auto">
+                                    <center>
+                                        <form method="POST" action="/joinroom">  
+                                            <div class="input-group mb-4">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text" id="basic-addon1"><i class="fas fa-key"></i></span>
+                                                </div>
+                                                <input type="text" placeholder="Room Id" class="form-control" name="roomId" required>
+                                            </div>
+                                            <button class="btn btn-info btn-block my-3" type="submit">Join</button>
+                                        </form>
+                                    </center>
+                                </div> 
+                            </div>
+                        </div>
+                    </div>               
+                </div> 
+            </div>
+            <!--Room form Div code ends here-->
+        </div>
+        <!--Left Side ends starts here-->
+
+        <!--Right Side code starts here-->
+        <div class="col-md-3" id="right-side">
+            <div class="row no-gutters" id="friend-list-div">
+                <div class="container-md" id="friend-list-container">
+                    <h2 style="color: #007bff;">Video-Call Friends</h2>
+                    <%if(!currentUser.friends.length){%>
+                        <h4 style="color: #007bff;">No friends</h4>
+                    <%}else{%>
+                        <%  friendsArray.forEach(function(friend){ %>
+                            <span>
+                                <a href="/profile/<%=friend.handlename %>" style="text-decoration: none;">
+                                    <h6 style="display: inline-block;"><%=friend.name %></h6> <p style="display: inline-block; margin:0%">(<%=friend.handlename %>)</p>
+                                </a>
+                            </span>
+                            <button id="<%=friend.handlename%>" value="<%=friend.handlename%>" onclick="call(this.value)" class="btn btn-info btn-block my-3" style="position: relative; left: 5%; width: 90%;margin: 2%!important;">Call <%=friend.name %></button>    
+                        <% }) %>
+                        <script>
+                            //When the call button is clicked this function is called
+                            function call(userHandlename){
+                                //this event is emmited and it sends the data to the server side so that the friend can be called
+                                socket.emit('calling-user',userHandlename,currentHandlename)    
+                            }
+                            //If the user is online i.e. we get his socket id in his database then we will be redirected to the call and the call recieve the alert via recieving-call event
+                            socket.on('enter-call',function(recieverHandlename,callerHandlename,callId){
+                                    window.open("/call/"+callId+"/?recievingUser="+recieverHandlename+"&callingUser="+callerHandlename)
+                            })
+                            //If the user is offline i.e. we get socket id as null in his database then we will get an alert that the user is offline so that the call could not be connected
+                            socket.on('could-not-connect-call',function(message){
+                                    okButton.innerHTML="OK";
+                                    okButton.style.display="block";
+                                    displayAlert(message,"Friend offline");                                    
+                                })
+                            //This event will be listened when our socket gets disconnected
+                            socket.on('disconnect', function() {
+                                console.log('disconnect');
+                            });
+                        </script>
+                    <%}%> 
+                </div>
+            </div>       
+        </div>
+        <!--Right Side code ends here-->
+      </div>
+      <!--Body code except nav bar and modal ends here--> 
+
+    <!--Script for socket.io functions-->
+    <script type="text/javascript">
+        
+        function play(){
+            document.getElementById('chatAudio').play();
+        }
+
+        function storeSocketIdInDb(){
+            //This event will pass on the current user id to the server side so that the current socket id can be stored in the database
+            socket.emit('store-socket-id-in-db',currentUserId)        
+        }
+
+        //As soon as we open the page this function will be called
+        storeSocketIdInDb();
+
+        // socket.on('connect',function(){
+        //     console.log("Doing")
+        //     socket.emit('store-socket-id-in-db',currentUserId)
+        // })
+        
+        //This event will be listened whenever a friend eequest is recieved to the current user and then reloads the page
+        socket.on('friend-request-alert',function(handlename){
+            play();
+            okButton.innerHTML="OK";
+            okButton.style.display="block";
+            displayAlert('You recived a friend request from '+handlename,"New friend request")
+            // alert('You recived a friend request from '+handlename); 
+            okButton.onclick=function(){
+                window.location.reload();
+            }  
+        })
+        
+        //This event will be listened whenever someone accepts our friend request and then reloads the page
+        socket.on('friend-request-accepted-alert',function(handlename){
+            play(); 
+            okButton.innerHTML="OK";
+            okButton.style.display="block";
+            displayAlert(handlename+' accepted your friend request',"Request accepted")
+            // alert(handlename+' accepted your friend request'); 
+            okButton.onclick=function(){
+                window.location.reload();
+            }  
+            //  window.location.reload();   
+        })
+        
+        //This event will be listened whenever someone rejects out friend request and thus reload out page
+        socket.on('friend-request-cancel-alert',function(handlename){ 
+            window.location.reload();   
+        })
+        
+        //This event will be listened whenever any user calls us. If we click on accept we will be redirected to the call url in a new tab and if we decline the user who called us will get an alert of call being declined
+        socket.on('recieving-call',function(userHandlename,currentHandlename,callId){
+            // setTimeout(function(){var answer=confirm(currentHandlename+" is calling you. \n Click OK to answer or Click Cancel to decline")
+            //     if(answer){
+            //     window.open("/call/"+callId+"/?recievingUser="+userHandlename+"&callingUser="+currentHandlename)
+            //     }else{
+            //     socket.emit('decline-call',callId)
+            //     }
+            // }, 1500); 
+            //The call notification will come to us 1.5s after the camera of the user who called us will be on
+            setTimeout(function(){
+                play();
+                displayAlert(currentHandlename+" is calling you.","Call")
+                okButton.style.display="block";
+                okButton.innerHTML="Accept"
+                noButton.style.display="block";
+                noButton.innerHTML="Decline";
+                //If we click any option the modal alert display attribute will be turned to none
+                okButton.onclick=function(){
+                    modal.style.display="none";
+                    noButton.style.display="none";
+                    window.open("/call/"+callId+"/?recievingUser="+userHandlename+"&callingUser="+currentHandlename)
                 }
-                socket.on('enter-call',function(recieverHandlename,callerHandlename,callId){
-                        window.open("/call/"+callId+"/?recievingUser="+recieverHandlename+"&callingUser="+callerHandlename)
-                    })
-                socket.on('could-not-connect-call',function(message){
-                        alert(message)
-                    })
-
-                    socket.on('disconnect', function() {
-                        console.log('disconnect');
-                    });
-            </script>
-        <%}%> 
+                noButton.onclick=function(){
+                    modal.style.display="none";
+                    noButton.style.display="none";
+                    socket.emit('decline-call',callId)
+                }
+            }, 1500);
+        })
+    
+    </script>
 </body>
 </html>

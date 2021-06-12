@@ -18,8 +18,6 @@ var UserSchema=new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"Users"
     }],
-    dateofbirth:String,
-    age:Number,
     friendRequest:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Users"
