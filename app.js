@@ -7,6 +7,7 @@ var localStrategy=require("passport-local");
 var server=require('http').Server(app);
 var io=require('socket.io')(server);
 var methodOverride=require("method-override");
+var flash=require("connect-flash");
 const { v4: uuidv4 } = require("uuid");
 
 app.set("view engine","ejs");
@@ -55,8 +56,12 @@ passport.deserializeUser(Users.deserializeUser());
 
 passport.use(new localStrategy(Users.authenticate()));
 
+app.use(flash());
+
 app.use(function(req,res,next){
     res.locals.currentUser=req.user;
+    res.locals.error=req.flash("error");
+    res.locals.success=req.flash("success");
     next();
 })
 
@@ -71,7 +76,7 @@ app.use(express.static(__dirname + "/public"))
 if (process.env.NODE_ENV === "development") {
     console.log("Development");
     var portForPeer=3000
-    var portUsing=3000 || 8000
+    var portUsing=3000
   }
   if (process.env.NODE_ENV === "production") {
     console.log("Production");
@@ -137,9 +142,20 @@ app.get("/signin",isNotLoggedIn,function(req,res){
     res.render("signin");
 })
 
-app.post("/signin",isNotLoggedIn,passport.authenticate("local",{
+app.post("/signin",isNotLoggedIn,function(req,res,next){
+    var xerox=req.query.xerox;
+    Users.findOne({username:req.body.username},function(err,user){
+        if(!user){
+                req.flash("error","Invalid Email or Password")
+                res.redirect("/signin");             
+        }else{
+             return next();
+        }
+    })
+    },passport.authenticate("local",{
     successRedirect:"/",
-    failureRedirect:"/signin"
+    failureRedirect:"/signin",
+    failureFlash:"Invalid Email or Password"
 }),function(req,res){
     console.log("Buffalo")
 })
@@ -226,6 +242,19 @@ app.get("/room/:id",isLoggedIn,function(req,res){
 
 })
 
+app.post("/joinroom",isLoggedIn,function(req,res){
+    var roomId=req.body.roomId;
+    roomIds.findOne({roomId:req.body.roomId},function(err,room){
+        if(!room){
+            req.flash("error","Room does not exist");
+            console.log("Hello")
+            res.redirect("/");
+        }else{
+            res.redirect('/room/'+ roomId);
+        }
+    })
+})
+
 app.get("/:handlename/friends",checkAuthorisation,function(req,res){
 
     Users.findOne({handlename:req.params.handlename}).populate({path:"friends",model:Users}).populate({path:"friendRequest",model:Users}).exec(function(err,user){
@@ -257,12 +286,16 @@ app.get("/call/:callId",isLoggedIn,function(req,res){
                 
             }
         }
-    })
-    
+    })  
+})
+
+app.get("/leaveCall",function(req,res){
+    // res.send("Left Call")
+    res.render("leftcall");
 })
 
 app.get("*",function(req,res){
-    res.send("Page does not exist");
+    res.send("LOL! Page does not exist");
 })
 
 server.listen(portUsing,function(req,res){
@@ -412,14 +445,14 @@ io.on('connect',function(socket){
 
     /****Socket.io code for video chat room starts here****/
 
-    socket.on("join-room", function(roomId, userId){
+    socket.on("join-room", function(roomId, userId,name){
         console.log("Join room on event",socket.id)
         socket.join(roomId);
         var numberOfUsers=io.sockets.adapter.rooms.get(roomId).size;
         if(numberOfUsers<=6){
             console.log(io.sockets.adapter.rooms.get(roomId).size)
             socket.emit('user-limit',false)
-            socket.broadcast.to(roomId).emit("user-connected", userId);
+            socket.broadcast.to(roomId).emit("user-connected", userId,name);
         }else{
             socket.emit('user-limit',true)
         }

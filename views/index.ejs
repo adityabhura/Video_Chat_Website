@@ -129,6 +129,15 @@
     <!--Modal alert box code starts here--> 
     <!--Modal alert box script tag--> 
     <script src="./modal.js"></script> 
+
+    <% if(error && error.length>0){ %>     
+        <script>
+          var error="<%=error%>"
+          okButton.innerHTML="OK";
+          okButton.style.display="block";
+          displayAlert(error,"Error");
+        </script>        
+    <% } %> 
     
 
     <audio id="chatAudio" >

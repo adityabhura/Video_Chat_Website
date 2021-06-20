@@ -24,8 +24,9 @@
         }
         .mt-4, .my-4 {
     margin-top: 5rem!important;
-}
-    </style>
+  }
+</style>
+<link rel="stylesheet" href="/modal.css">
 </head>
 <body>
     <!-- Nav bar code starts here -->
@@ -85,6 +86,32 @@
         </div>
     </div>
     <!-- Form container ends here -->
+
+
+<% if(error && error.length>0){ %>
+    <!--Modal alert box code starts here-->
+    <div id="myModal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <!-- <span class="close">&times;</span> -->
+          <h5 id="alertHead" style="color: #17a2b8;"></h5>
+          <p id="alertMessage" style="color: #17a2b8;"></p>
+          <button id="ok" class="btn btn-info btn-block" style="width:50%;position:relative;left: 25%; display: none;"></button>
+          <button id="no" class="btn btn-danger btn-block my-3" style="width:50%;position:relative;left: 25%; display: none;"></button>
+      </div>     
+    </div>
+    <!--Modal alert box code starts here--> 
+    <!--Modal alert box script tag--> 
+    <script src="./modal.js"></script> 
+  
+    <script>
+      var error="<%=error%>"
+      okButton.innerHTML="OK";
+      okButton.style.display="block";
+      displayAlert(error,"Error");
+    </script>        
+<% } %> 
+ 
 
 </body>
 </html>

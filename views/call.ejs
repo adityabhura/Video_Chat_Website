@@ -4,13 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zoom-Clone</title>
-    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../../call.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <script src="https://unpkg.com/peerjs@1.2.0/dist/peerjs.min.js"></script>
     <script src="https://kit.fontawesome.com/c939d0e917.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
         var callId="<%=callId%>"
         var callerHandlename="<%=query.callingUser%>" 
@@ -20,86 +28,144 @@
     </script>
     <script src="/socket.io/socket.io.js" ></script>
     <script>
-        var socket=io()
+        var socket=io();
+    </script>
+    <link rel="stylesheet" href="./../../modal.css">
+</head>
+<body>
+     <!--Modal alert box code starts here-->
+     <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+          <!-- <span class="close">&times;</span> -->
+            <h5 id="alertHead" style="color: #17a2b8;"></h5>
+            <p id="alertMessage" style="color: #17a2b8;"></p>
+            <button id="ok" class="btn btn-info btn-block" style="width:50%;position:relative;left: 25%; display: none;"></button>
+            <button id="no" class="btn btn-danger btn-block my-3" style="width:50%;position:relative;left: 25%; display: none;"></button>
+        </div>     
+    </div>
+    <!--Modal alert box code starts here--> 
+    <!--Modal alert box script tag--> 
+    <script src="./../../modal.js"></script> 
+
+
+    <div class="main row no-gutters" style="width: 100%;height: 100%;">
+        <div class="main_left">
+            <div class="main_videos">
+                <div id='video-grid'>
+                    
+                </div>
+            </div>
+            <div class="main_controls">
+                
+                <div class="main_controls_block">
+                    <div class="main_controls_time">
+                      <h2 id="time"></h2>
+                    </div>
+                </div>
+
+                <div class="main_controls_block">
+                    <div class="main_controls_button main_mute_button">
+                        <i  onclick="muteUnmute()" class="fas fa-microphone"></i>
+                        <h5 onclick="muteUnmute()">Mute</h5>
+                    </div>
+                    <div class="main_controls_button main_video_button"> 
+                        <i  onclick="playStop()" class="fas fa-video"></i>
+                        <h5  onclick="playStop()">Stop Video</h5>
+                    </div>
+                    <div class="main_controls_button">
+                        <a style="text-decoration: none;color:black" href="/leaveCall"><i class="fas fa fa-phone" style="transform: rotateZ(224deg);"></i></a>
+                        <a style="text-decoration: none;color:black" href="/leaveCall"><h5>Leave</h5></a>
+                    </div>
+                    
+                </div>
+
+                <div class="main_controls_block">
+                    <div class="main_controls_button">
+                        <i class="fas fa-comment-alt" onclick="displayChats()"></i>
+                        <h5 onclick="displayChats()">Chat</h5>
+                        <div id="chat-dot"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="main_right">
+            <div id="chat_div">
+                <div class="main_header">
+                    <h1>Chats</h1>
+                </div>
+                <div class="main_chat_window">
+                    <ul class="messages">
+    
+                    </ul>
+                </div>
+                <div class="main_message_container">
+                    <input id="chat_message" type="text" placeholder="Type message here...">
+                </div>
+            </div>         
+        </div>
+
+    </div>
+
+    <script>
         function play(){
             document.getElementById('chatAudio').play()
         }
         
         socket.on('call-declined-by-reciever',function(){
-           window.alert("Call Declined")
-           window.close();
+            okButton.innerHTML="OK"
+            okButton.style.display="block";
+            displayAlert("Call Declined","Notification")
+        //    window.alert("Call Declined")
+           okButton.onclick=function(){
+                window.close();
+           }     
         })
 
         socket.on('limit-exceded-in-call-alert',function(){
-            window.alert('You are already on this call')
+            okButton.innerHTML="OK"
+            okButton.style.display="block";
+            displayAlert("You are already on this call","Notification")
+           okButton.onclick=function(){
             window.location.href="/abcdefghijklmnopqrstuvwyz";
+           }  
+            // window.alert('You are already on this call')
+            
         })
-        
-
     </script>
-</head>
-<body>
-    <div class="main">
-        <div class="main_left">
-            <div class="main_videos">
-                <div id='video-grid'>
 
-                </div>
-            </div>
-            <div class="main_controls">
-                <div class="main_controls_block">
-                    <div onclick="muteUnmute()" class="main_controls_button main_mute_button">
-                        <i class="fas fa-microphone"></i>
-                        <span>Mute</span>
-                    </div>
-                    <div onclick="playStop()" class="main_controls_button main_video_button"> 
-                        <i class="fas fa-video"></i>
-                        <span>Stop Video</span>
-                    </div>
-                </div>
+    <script>
+        var rightDiv=document.getElementsByClassName("main_right");
+        var chatDiv=document.getElementById("chat_div");
+        var chatDot=document.getElementById("chat-dot");
+        function displayChats(){
+            if(!rightDiv[0].style.display && !chatDiv.style.display){      
+                rightDiv[0].style.display="flex";
+                chatDiv.style.display="flex";
+                chatDot.style.display="none";
+            }else if(rightDiv[0].style.display==="none" && chatDiv.style.display==="none"){
+                rightDiv[0].style.display="flex";
+                chatDiv.style.display="flex";
+                chatDot.style.display="none";
+            }else if(!chatDiv.style.display && rightDiv[0].style.display==="none"){
+                rightDiv[0].style.display="flex";
+                chatDiv.style.display="flex";
+                chatDot.style.display="none";
+            }else if(rightDiv[0].style.display==="flex" && chatDiv.style.display==="flex"){
+                rightDiv[0].style.display="none";
+                chatDiv.style.display="none";
+            }
+        }
+    </script>
 
-                <div class="main_controls_block">
-                    <div class="main_controls_button">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>Security</span>
-                    </div>
-                    <div class="main_controls_button"> 
-                        <i class="fas fa-user-friends"></i>
-                        <span>Participants</span>
-                    </div>
-                    <div class="main_controls_button">
-                        <i class="fas fa-comment-alt"></i>
-                        <span>Chat</span>
-                    </div>
-                </div>
-
-                <div class="main_controls_block">
-                    
-                    <div class="main_controls_button"> 
-                        <span class="leave_meeting">Leave Meeting</span>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <div class="main_right">
-            <div class="main_header">
-                <h6>Chat</h6>
-            </div>
-            <div class="main_chat_window">
-                <ul class="messages">
-
-                </ul>
-            </div>
-            <div class="main_message_container">
-                <input id="chat_message" type="text" placeholder="Type message here...">
-            </div>
-        </div>
-
-    </div>
     <script>
 var videoGrid = document.getElementById('video-grid');
+var myVideoDiv=document.createElement('div');
 var myVideo = document.createElement('video');
+var numberOfusers=0;
 myVideo.muted = true;
 
 var peer = new Peer(undefined, {
@@ -110,39 +176,71 @@ var peer = new Peer(undefined, {
 
 let myVideoStream;
 
+function addIdToVideo(video,name){
+    console.log("Adding id",name)
+    var id=document.createAttribute('id')
+    id.value=name;
+    video.setAttributeNode(id);
+    var h1=document.createElement('h1');
+    h1.innerHTML=name;
+    video.parentNode.insertBefore(h1, video.nextSibling);
+}
+
  //If the the metadata is loaded completely after that our video starts to play i.e. our camera becomes on
-var addVideoStream = (video, stream) => {
+var addVideoStream = (videoDiv,video, stream) => {
     video.srcObject = stream;
+    
     video.addEventListener('loadedmetadata', () => {
         video.play();
     })
-    videoGrid.append(video);
+    videoGrid.append(videoDiv);
+    videoDiv.append(video);
+    console.log("Hehe",video)
 };
 
-var connectToNewUser = (userId, stream) => {
-  console.log("Connecting to new user");
+var connectToNewUser = (userId, stream,currentName) => {
+  console.log("Connecting to new user",stream);
   //This function will call a user with userId passed and it will pass the stream to that user
     var call = peer.call(userId, stream);
+    var videoDiv=document.createElement('div');
     var video = document.createElement('video');
-    
+    var h1=document.createElement('h1');
+    var conn=peer.connect(userId)
+    var userName;
+
+
     //THis events does that when we call this user we're gonna send them 
     //our video stream and when they send us back their video 
     //stream we are gonna get this event here called the 
     //stream which is going to take their video stream so 
-    call.on('stream', userVideoStream => {
-      console.log("Adding video stream")
-       //We are taking stream from the other user that we are calling and adding it to out own custom video element on our page
-        addVideoStream(video, userVideoStream);
+    call.on('stream', userDataStream => {
+        console.log("Adding video stream",userDataStream)
+        //We are taking stream from the other user that we are calling and adding it to out own custom video element on our page
+        addVideoStream(videoDiv,video,userDataStream);
     })
 
     //Whenever someone leaves the video call we want to remove their video so we use the following code
     call.on('close',function(){
         console.log("removing User at",new Date())
+        videoDiv.remove();
         video.remove();
     })
+   
+    conn.on('open', function() {
+        // Receive messages
+        conn.on('data', function(data) {
+            userName=data;
+            console.log('Received', data);
+            addIdToVideo(video,userName)
+        });
 
+        // Send messages
+        conn.send(currentName);    
+        })
+    
     
     peer[userId]=call;
+    // peer[userId]=conn;
 }
 
 //coneecting our video
@@ -154,99 +252,136 @@ var connectToNewUser = (userId, stream) => {
 //     }
 // })
 
-navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true
-}).then(stream => {
-    
-    //Calling the reciever only after camera is on 
-    socket.emit('make-the-recieving-call-event-emit')
-    
-    
-    myVideoStream = stream;
-    addVideoStream(myVideo, stream);
-    console.log("Tik TIk")
-    //When someone tries to call us we will send our stream through it
-    peer.on('call', call => {
-        call.answer(stream)
-        var video = document.createElement('video');
-        call.on('stream', userVideoStream => {
-            addVideoStream(video, userVideoStream)
-        })
-        call.on('close',function(){
-            console.log("removing User 1")
-            video.remove();
-        })
-    })
-
-    
-
-    socket.on('user-connected', (userId,name) => {
-    window.alert(name +" joined");
-      console.log("User connected with userId",userId)
-        connectToNewUser(userId, stream);
-    })
-
-    socket.on('user-disconnected', (userId,name) => {
-        alert(name+" left");
-        var leave=confirm("Leave Call")
-        if(leave){
-            window.close()
-        }
-        
-        console.log("User disconnected with userId",userId,"at",new Date());    
-        connectToNewUser(userId, stream); 
-      })
-}).catch(function(err){
-    alert("Your camera is not starting or you did not allow the site to use camera or microphone");
-    window.close();
-})
-
-
-
 peer.on('open', id => {
     console.log("Opening peer")
     socket.emit('joined-call',callId,id,name,recieverHandlename,callerHandlename);
 });
+// var conn = peer.connect('dest-peer-id');
+
+navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: true,
+}).then(stream => {
+    //Storing name of current user
+    var currentName=name;
+
+    //Calling the reciever only after camera is on 
+    socket.emit('make-the-recieving-call-event-emit')
+    myVideoStream = stream;
+    addVideoStream(myVideoDiv,myVideo, stream);
+    addIdToVideo(myVideo,currentName);
+    console.log("Tik TIk")
+    //When someone tries to call us we will send our stream through it i.e. send get user stream from 1st user and send stream of 2nd user to 1st user
+    peer.on('call', call => {
+        call.answer(stream)
+        console.log("answering",stream)
+        var videoDiv=document.createElement('div');
+        var video = document.createElement('video');
+        var userName;
+        //the callback of the connection event will both provide a DataConnection object. This object will allow you to send and receive data
+        peer.on('connection', function(conn) {  
+            //Emitted when the connection is established and ready-to-use.     
+            conn.on('open', function() {
+                console.log('conn open');
+                // Sends data to the user to which we are trying to connect i.e. the 1st user
+                conn.send(currentName);
+                //Recieve data from user to whom we are answering i.e. to 1st user
+                conn.on('data', function(data) {
+                    userName=data;
+                    console.log("Received",name);
+                    addIdToVideo(video, userName);
+                });
+            });
+        });
+        
+        call.on('stream', userDataStream => {
+            console.log("YAHA SE KAR RAHA HU",call)
+            addVideoStream(videoDiv,video, userDataStream)
+        })
+        call.on('close',function(){
+            console.log("removing User 1")
+            videoDiv.remove();
+            video.remove();
+        })
+    })
 
 
+    socket.on('user-connected', (userId,name) => {
+        okButton.innerHTML="OK";
+        okButton.style.display="block";
+        noButton.style.display="none";
+        displayAlert(name +" joined","Notification")
+        okButton.onclick=function(){
+            modal.style.display="none";
+        }
+    // window.alert(name +" joined")
+      console.log("User connected with userId",userId,stream)
+        connectToNewUser(userId, stream,currentName);
+    })
+
+    socket.on('user-disconnected', (userId,name) => {
+        okButton.innerHTML="YES";
+        noButton.innerHTML="NO";
+        okButton.style.display="block";
+        noButton.style.display="block";     
+        displayAlert(name+" left. Leave call","Notification")
+        okButton.onclick=function(){
+            window.close();
+            noButton.style.display="none";
+        }
+        // alert(name+" left");
+        // var leave=confirm("Leave Call")
+        // if(leave){
+        //     window.close()
+        // }     
+        console.log("User disconnected with userId",userId,"at",new Date()); 
+        connectToNewUser(userId,stream,name); 
+      })
+}).catch(function(err){
+    alert(err,"Your camera is not starting or you did not allow the site to use camera or microphone");
+    window.close();
+})
 
 
-
-
-let text = $('input');
+var text = document.getElementById('chat_message');
     $('html').keydown(e => {
-        if (e.which == 13 && text.val().length !== 0) {
-            socket.emit('message', {text:text.val(),name:name});
-            console.log(text.val());
-            text.val('')
+        var messageText=text.value.trim();
+        if (e.which == 13 && messageText.length !== 0) {
+            socket.emit('message', {text:messageText,name:name});
+            console.log(text.value);
+            text.value='';
         }
     });
 
-    socket.on('createMessage', message => {
-        $('ul').append(`<li class="message"><b>${message.name}</b><br />${message.text}</li>`)
+    socket.on('createMessage', function(message) {
+        var time=getTime();
+        $('ul').append(`<li class="message" style="width: 90%;word-wrap: break-word;"><span><h3 style="display:inline-block;margin:0%;font-weight: 450;">${message.name}</h3></span><p style="display:inline-block;margin:0%;padding-left:2rem">${time}</p><h5 style="margin:0%; font-weight: 400;">${message.text}</h5></li>`)
+        if(chatDiv.style.display==="none" || !chatDiv.style.display){
+            chatDot.style.display="block";
+        }
         scrollToBottom();
     })
 
-var setPlayVideo = () => {
+    var setPlayVideo =function () {
     var html = `
-    <i class="stop fas fa-video-slash"></i>
-    <span>PlayVideo</span>`
+    <i  onclick="playStop()" class="stop fas fa-video-slash"></i>
+    <h5  onclick="playStop()">Play Video</h5>`
     $('.main_video_button').html(html);
 }
 
-var setStopVideo = () => {
+var setStopVideo = function() {
     var html = `
-    <i class="fas fa-video"></i>
-    <span>Stop Video</span>`
+    <i  onclick="playStop()" class="fas fa-video"></i>
+    <h5  onclick="playStop()">Stop Video</h5>`
     $('.main_video_button').html(html);
 }
 
 
-var playStop = () => {
+var playStop = function() {
     let enabled = myVideoStream.getVideoTracks()[0].enabled;
     if(enabled){
         myVideoStream.getVideoTracks()[0].enabled = false;
+        myVideo.style.backgroundColor="white"
         setPlayVideo();
     }
     else {
@@ -262,15 +397,15 @@ var scrollToBottom = () => {
 }
 var setMuteButton = () => {
     var html = `
-    <i class="fas fa-microphone"></i>
-    <span>Mute</span>`
+    <i onclick="muteUnmute()" class="fas fa-microphone"></i>
+    <h5 onclick="muteUnmute()">Mute</h5>`
     $('.main_mute_button').html(html);
 }
 
 var setUnmuteButton = () => {
     var html = `
-    <i class="unmute fas fa-microphone-slash"></i>
-    <span>Ummte</span>`
+    <i onclick="muteUnmute()" class="unmute fas fa-microphone-slash"></i>
+    <h5 onclick="muteUnmute()">Unmute</h5>`
     $('.main_mute_button').html(html);
 }
 
@@ -283,9 +418,31 @@ var muteUnmute = () => {
     else {
         setMuteButton();
         myVideoStream.getAudioTracks()[0].enabled = true;
-    }
+    }   
+}
 
-    
+startTime();
+function startTime() {
+    var today = new Date();
+    var h = today.getHours();
+    var m = today.getMinutes();
+    h=checkTime(h);
+    m = checkTime(m);
+    document.getElementById("time").innerHTML =h + ":" + m;
+    var t = setTimeout(startTime, 500);
+  }
+function checkTime(i) {
+if (i < 10) {i = "0" + i}; 
+return i;
+}
+
+function getTime(){
+    var today = new Date();
+    var h = today.getHours();
+    var m = today.getMinutes();
+    h=checkTime(h);
+    m = checkTime(m);
+    return h +":"+m;
 }
     </script>
 </body>
