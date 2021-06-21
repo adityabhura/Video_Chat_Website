@@ -26,16 +26,6 @@ mongoose.connect("mongodb+srv://video-chat-app:aditya02@video-chat-app.zpjqs.mon
     console.log("Database Connected");
 });
 
-// mongoose.connect("mongodb+srv://VideoChatApp:SumanSunil@303@videochatapp.1cvrt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",function(res,req){
-//     console.log("Database Connected");
-// });
-
-// mongoose.connect("mongodb+srv://video-chat-app:ankita2001@cluster0.hgets.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",function(res,req){
-//    console.log("Database Connected");
-//  });
-
-
-
 var Users=require("./models/users.js");;
 // var {findById,db}=mongoose.model("Users",User);
 
@@ -215,10 +205,6 @@ app.put("/profile/:handlename/edit",checkAuthorisation,function(req,res){
 
 app.get("/searchfriend",isLoggedIn,function(req,res){
     res.render("search");
-})
-
-app.get("/joinroom",isLoggedIn,function(req,res){
-    res.render("joinroom");
 })
 
 app.get("/room",isLoggedIn,function(req,res){

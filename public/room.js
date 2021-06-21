@@ -1,3 +1,7 @@
+function playAudio(){
+    document.getElementById('chatAudio').play();
+}
+
 var socket = io('/');
 var videoGrid = document.getElementById('video-grid');
 var myVideo = document.createElement('video');
@@ -89,6 +93,7 @@ var connectToNewUser = (userId, stream,userName) => {
         okButton.innerHTML="OK";
         okButton.style.display="block";
         displayAlert(userName+" joined","Notification");
+        playAudio();
    
   console.log("Connecting to new user");
   //This function will call a user with userId passed and it will pass the stream to that user
@@ -118,6 +123,7 @@ var connectToNewUser = (userId, stream,userName) => {
         okButton.innerHTML="OK";
         okButton.style.display="block";
         displayAlert(userName+" left","Notification");
+        playAudio();
         video.remove();
         h1.remove();
         videoDiv.remove();
@@ -170,6 +176,7 @@ navigator.mediaDevices.getUserMedia({
             okButton.innerHTML="OK";
             okButton.style.display="block";
             displayAlert(call.options.metadata.name+" left","Notification");
+            playAudio();
             video.remove();
             h1.remove();
             videoDiv.remove();
@@ -189,6 +196,7 @@ navigator.mediaDevices.getUserMedia({
     okButton.innerHTML="OK"
     okButton.style.display="block"
     displayAlert(err,"Error");
+    playAudio();
     okButton.onclick=function(){
         window.location.href="/";
     }
@@ -269,6 +277,7 @@ var text = document.getElementById('chat_message');
         $('ul').append(`<li class="message" style="width: 90%;word-wrap: break-word;"><span><h3 style="display:inline-block;margin:0%;font-weight: 450;">${message.name}</h3></span><p style="display:inline-block;margin:0%;padding-left:2rem">${time}</p><h5 style="margin:0%; font-weight: 400;">${message.text}</h5></li>`)
         if(chatDiv.style.display==="none" || !chatDiv.style.display){
             chatDot.style.display="block";
+            playAudio();
         }
         scrollToBottom();
     })
