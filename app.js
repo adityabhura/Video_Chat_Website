@@ -90,6 +90,7 @@ var callIdSchema=new mongoose.Schema({
 })
 var callIds=mongoose.model("callIds",callIdSchema);
 
+//Index Route
 app.get("/",function(req,res){
     if(req.isAuthenticated()){
         currentUser=req.user;
@@ -107,14 +108,17 @@ app.get("/",function(req,res){
     }
 })
 
+//Index route when no signed in
 app.get("/home",isNotLoggedIn,function(req,res){
     res.render('home');
 })
 
+//Sign up route
 app.get("/signup",isNotLoggedIn,function(req,res){
     res.render('signup');
 })
 
+//Sign up post route
 app.post("/signup",isNotLoggedIn,function(req,res){
     Users.register(new Users({username:req.body.username,email:req.body.username,handlename:req.body.handlename,name:req.body.name}),req.body.password,function(err,user){
         if(err){
@@ -128,12 +132,13 @@ app.post("/signup",isNotLoggedIn,function(req,res){
     })
 })
 
+//Sign in route
 app.get("/signin",isNotLoggedIn,function(req,res){
     res.render("signin");
 })
 
+//Sign in post route
 app.post("/signin",isNotLoggedIn,function(req,res,next){
-    var xerox=req.query.xerox;
     Users.findOne({username:req.body.username},function(err,user){
         if(!user){
                 req.flash("error","Invalid Email or Password")
@@ -147,27 +152,29 @@ app.post("/signin",isNotLoggedIn,function(req,res,next){
     failureRedirect:"/signin",
     failureFlash:"Invalid Email or Password"
 }),function(req,res){
-    console.log("Buffalo")
 })
 
+//Signout post route
 app.post("/signout",isLoggedIn,function(req,res){
     req.logout();
     console.log("Logged out")
     res.redirect("/home");
 })
 
-app.get("/cleardata",function(req,res){
-    Users.deleteMany({},function(err){
-        if(err){
-            res.send(err);
-        }else{
-            res.redirect("/home")
-        }
-    })
-})
+//Clear database
+// app.get("/cleardata",function(req,res){
+//     Users.deleteMany({},function(err){
+//         if(err){
+//             res.send(err);
+//         }else{
+//             res.redirect("/home")
+//         }
+//     })
+// })
 
+//User profile route
 app.get("/profile/:handlename",isLoggedIn,function(req,res){
-    console.log(req.user,req.session)
+    // console.log(req.user,req.session)
     Users.findOne({handlename:req.params.handlename},function(err,user){
         if(!user){
              res.send("User does not exist")   
@@ -182,6 +189,7 @@ app.get("/profile/:handlename",isLoggedIn,function(req,res){
     
 })
 
+//Edit profile route
 app.get("/profile/:handlename/edit",checkAuthorisation,function(req,res){
     Users.findOne({handlename:req.params.handlename},function(err,user){
        if(err){
@@ -192,6 +200,7 @@ app.get("/profile/:handlename/edit",checkAuthorisation,function(req,res){
 })
 })
 
+//Edit profile put route
 app.put("/profile/:handlename/edit",checkAuthorisation,function(req,res){
     Users.findOneAndUpdate({handlename:req.params.handlename},req.body.userData,function(err,user){
        if(err){
@@ -203,16 +212,19 @@ app.put("/profile/:handlename/edit",checkAuthorisation,function(req,res){
 })
 })
 
+//Search friend route
 app.get("/searchfriend",isLoggedIn,function(req,res){
     res.render("search");
 })
 
+//Create room route
 app.get("/room",isLoggedIn,function(req,res){
     var roomId=uuidv4()
     roomIds.create({roomId:roomId});
     res.redirect('/room/'+ roomId);
 })
 
+//Room route
 app.get("/room/:id",isLoggedIn,function(req,res){
     roomIds.findOne({roomId:req.params.id},function(err,roomId){
         if(err){
@@ -228,12 +240,12 @@ app.get("/room/:id",isLoggedIn,function(req,res){
 
 })
 
+//Post route for joining room
 app.post("/joinroom",isLoggedIn,function(req,res){
     var roomId=req.body.roomId;
     roomIds.findOne({roomId:req.body.roomId},function(err,room){
         if(!room){
             req.flash("error","Room does not exist");
-            console.log("Hello")
             res.redirect("/");
         }else{
             res.redirect('/room/'+ roomId);
@@ -241,8 +253,8 @@ app.post("/joinroom",isLoggedIn,function(req,res){
     })
 })
 
+//Friends route for seeing friends and friend requests
 app.get("/:handlename/friends",checkAuthorisation,function(req,res){
-
     Users.findOne({handlename:req.params.handlename}).populate({path:"friends",model:Users}).populate({path:"friendRequest",model:Users}).exec(function(err,user){
         if(!user){
              res.send("User does not exist")   
@@ -256,6 +268,7 @@ app.get("/:handlename/friends",checkAuthorisation,function(req,res){
     })
 })
 
+//Call route
 app.get("/call/:callId",isLoggedIn,function(req,res){
     callIds.findOne({callId:req.params.callId},function(err,callId){
         if(err){
@@ -275,8 +288,8 @@ app.get("/call/:callId",isLoggedIn,function(req,res){
     })  
 })
 
+//leave call route
 app.get("/leaveCall",function(req,res){
-    // res.send("Left Call")
     res.render("leftcall");
 })
 
@@ -288,6 +301,7 @@ server.listen(portUsing,function(req,res){
     console.log("Server listenting to port 3000");
 })
 
+//Checking if the person is logged in or not. If logged in then send next
 function isLoggedIn(req,res,next){
     if(req.isAuthenticated()){
         return next();
@@ -297,22 +311,24 @@ function isLoggedIn(req,res,next){
     }  
 }
 
+//Checking if the person is logged in or not. If not logged in then send next
 function isNotLoggedIn(req,res,next){
     if(!req.isAuthenticated()){
         return next();
     }else{
         // res.send("You are not allowed to do it")
-        console.log("Your are not allowed")
         res.redirect("/")
     }
     
 }
 
+//Checking the current user and the user searched for
 function checkAuthorisation(req,res,next){
     if(req.isAuthenticated()){
        Users.findOne({handlename:req.params.handlename},function(err,User){
         if(!User){
-            res.send("User does not exist")   
+            req.flash("error","User does not exist");
+                   res.redirect("/"); 
        }else{
             if(err){
                console.log(err);
@@ -321,9 +337,9 @@ function checkAuthorisation(req,res,next){
                if(req.user && User._id.equals(req.user._id)){
                    next();
                }else{
-                //    req.flash("error","You are not allowed to do that");
-                //    res.redirect("back");
-                res.send("Tu nhi kar sakta")
+                   req.flash("error","You are not allowed to do that");
+                   res.redirect("/");
+                // res.send("You are not allowed to do it")
                }
            }
         }
@@ -332,11 +348,12 @@ function checkAuthorisation(req,res,next){
    }
 
 
-
+//Socket.io code goes here
 io.on('connect',function(socket){
 
     console.log("User joined with Socket Id",socket.id);
     
+    //This event will store the socket id in the database of the user
     socket.on('store-socket-id-in-db',function(currentUserId){
         Users.findById(currentUserId,function(err,user){
             if(err){
@@ -346,29 +363,21 @@ io.on('connect',function(socket){
                     console.log("No User")
                 }else{
                 user.socketId=socket.id;
+                //Socket will join the handlename i.e. it will be associated with the current handlename
                 socket.join(user.handlename)
                 user.save();
 
                 socket.on("disconnect",function(reason){
                     if(reason==='ping timeout'){
-                        console.log('ping timeout qwertyuiop')
+                        // console.log('ping timeout')
                     }else{
                         user.socketId="";
                         user.save();
-                        console.log("qwewvhuearbnuv")
-                    }
-                    
+                    }                
                 })
-
                 }
-                
-            }
-            
+            }         
         })
-    })
-
-    socket.on('remove-socket-id-from-db',function(){
-        console.log("qwertyuiuoipgavrngjrgnqg")
     })
 
     /****** Socket.io code for checking unique handlename and username starts here ******/
@@ -376,11 +385,10 @@ io.on('connect',function(socket){
     socket.on('checkUsername',function(data){
         Users.findOne({username:data.username},function(err,user){
             if(user){
-                console.log(user)
+                // console.log(user)
                 //This event will send true to client side if the username that came from client side is present in the database 
                 socket.emit('alertForUsername',{present:true})
             }else{
-                console.log("No")
                 //This event will send false to client side if the username that came from client side is not present in the database 
                 socket.emit('alertForUsername',{present:false})
             }
@@ -391,11 +399,10 @@ io.on('connect',function(socket){
     socket.on('checkHandlename',function(data){
         Users.findOne({handlename:data.handlename},function(err,user){
             if(user){
-                console.log(user)
+                // console.log(user)
                 //This event will send true to client side if the handlename that came from client side is present in the database 
                 socket.emit('alertForHandlename',{present:true})
             }else{
-                console.log("No")
                  //This event will send false to client side if the handlename that came from client side is not present in the database
                 socket.emit('alertForHandlename',{present:false})
             }
@@ -406,7 +413,10 @@ io.on('connect',function(socket){
 
 
     /****Socket.io code for searching users starts here****/
+    //This event will search for the handlename or the name coming from client side in the database and send the matching results to the client side
+    //search-result event will send the matched results to the client side
     socket.on('search',function(data){
+        //For handlename
         if(data.type=='handlename'){
             Users.find({handlename:new RegExp(data.text,"i")},function(err,result){
                 if(err){
@@ -415,6 +425,7 @@ io.on('connect',function(socket){
                     socket.emit('search-results',{result})
                 }   
             })
+        //For name
         }else if(data.type=='name'){
             Users.find({name:new RegExp(data.text,"i")},function(err,result){
                 if(err){
@@ -424,62 +435,71 @@ io.on('connect',function(socket){
                 }   
             })
         }
-        // console.log(data)
     })
     /****Socket.io code for searching users ends here****/
 
 
     /****Socket.io code for video chat room starts here****/
-
+    //This event is listened whenever someone joins a room
+    //user-limit event sends true or false back to the server. If the number of users in the room is more than 6 than it will send true and if not then it will send false
+    //user-connected event will broadcast to all other socket in the room that a new socket has joined i.e. emitted to all other in the room when a new user has joined room
     socket.on("join-room", function(roomId, userId,name){
-        console.log("Join room on event",socket.id)
+        //Socket id of the user is now associated with the room id 
         socket.join(roomId);
+        //The variable stores the number of sockets who are currently in the room, once the socket is disconnected it will be removed from the room i.e. no longer associated with it
         var numberOfUsers=io.sockets.adapter.rooms.get(roomId).size;
         if(numberOfUsers<=6){
-            console.log(io.sockets.adapter.rooms.get(roomId).size)
+            // console.log(io.sockets.adapter.rooms.get(roomId).size)
             socket.emit('user-limit',false)
             socket.broadcast.to(roomId).emit("user-connected", userId,name);
         }else{
             socket.emit('user-limit',true)
         }
         
-    
+        //Event will send the message to all in the room
         socket.on("message", function(message){
           io.to(roomId).emit("createMessage", message);
         });
         
+        //When a socket is disconnected i.e. a user leaves the room. His socket id will be removed from the roomId i.e. no longer associated with the room id
         socket.on('disconnect',function(){
           console.log("User disconnected");
           if(!io.sockets.adapter.rooms.get(roomId)){
               //Remove roomId from roomIds collection as room has no one
               roomIds.deleteOne({roomId:roomId});
           }
+          //This event will send all other in the room that the user has disconnected
           socket.broadcast.to(roomId).emit("user-disconnected", userId);
         })
     
       });
-
     /****Socket.io code for video chat room ends here****/
 
 
     /****Socket.io code for sending friend request starts here****/
+      //This event will send the friend request to the friend i.e. add current user id in the friend's friend request array
       socket.on('send-friend-request',function(userId,currentUserId,currentHandlename){
           Users.findById(userId,function(err,user){
               if(err){
                 console.log(err);
                 socket.emit('friend-request-sent',false)
               }else{
-                  user.friendRequest.push(currentUserId);
-                  user.save();
-                  console.log(user.friendRequest);
-                  socket.emit('friend-request-sent',true)
-                  if(user.socketId){
-                      socket.broadcast.to(user.handlename).emit('friend-request-alert',currentHandlename);
-                  }
-              }
-          })
+                    user.friendRequest.push(currentUserId);
+                    user.save();
+                    // console.log(user.friendRequest);
+                    //This event will send the current user confirmation thatmthe friend request is sent
+                    socket.emit('friend-request-sent',true)
+                    if(user.socketId){
+                        //If the friend is online i.e. he has socket id then this event will alert the friend that he has recieved a friend reuqest from you(current user)
+                        socket.broadcast.to(user.handlename).emit('friend-request-alert',currentHandlename);
+                    }
+                }
+            })
       })
 
+      //This event is listened when current user cancels the sent friend request. It will remove the current user id from the friend request array of the friend.
+      //friend-request-cancelled event will send confirmation to the current user that the friend request is cancelled or not
+      //friend-request-cancel-alert will be broadcasted to the friend via his handlename if he is online i.e. has a socket id.
       socket.on('cancel-friend-request',function(userId,currentUserId,currentHandlename){
         Users.findById(userId,function(err,user){
             if(err){
@@ -491,7 +511,7 @@ io.on('connect',function(socket){
                     user.friendRequest.splice(index,1);
                 }
                 user.save();
-                console.log(user.friendRequest);
+                // console.log(user.friendRequest);
                 socket.emit('friend-request-cancelled',true)
                 if(user.socketId){
                     socket.broadcast.to(user.handlename).emit('friend-request-cancel-alert');
@@ -500,6 +520,9 @@ io.on('connect',function(socket){
         })
     })
 
+    //This event will be emitted when the friend request is accepted.friend's user idis added in the friends array of the user who sent the friend request
+    //friend-request-accepted event will send confirmation to client who accepted the friend request that the friend request is accepted
+    //friend-request-accepted-alert will be broadcasted to the user who sent the friend request via his handlename if he is online i.e. has socketid
     socket.on('accept-friend-request',function(userId,currentUserId,currentHandlename){
         Users.findById(userId,function(err,user){
             if(err){
@@ -507,13 +530,13 @@ io.on('connect',function(socket){
               socket.emit('friend-request-accepted',false)
             }else{
                 var index=user.friendRequest.indexOf(currentUserId)
-                console.log("The index is",index)
+                // console.log("The index is",index)
                 if(index>-1){
                     user.friendRequest.splice(index,1);    
                 }
                 user.friends.push(currentUserId);
                 user.save();
-                console.log(user.friends);
+                // console.log(user.friends);
                 socket.emit('friend-request-accepted',true)
                 if(user.socketId){
                     socket.broadcast.to(user.handlename).emit('friend-request-accepted-alert',currentHandlename);
@@ -522,36 +545,41 @@ io.on('connect',function(socket){
         })
     })
 
+    //user id of the user who sent the friend request is removed from friend request araay and is added to friends array.
+    //friend-request-accepted event will send the confirmation to the friend who accpeted the friend request
     socket.on('adding-friend-to-current-user',function(userId,currentUserId,currentHandlename){
         Users.findById(currentUserId,function(err,user){
             if(err){
               console.log(err);
             }else{
                 var index=user.friendRequest.indexOf(userId)
-                console.log("The index is",index)
+                // console.log("The index is",index)
                 if(index>-1){
                     user.friendRequest.splice(index,1);    
                 }
                 user.friends.push(userId);
                 user.save();
-                console.log("aeengbvuiwnrbkornbk",user.friends);
+                // console.log(user.friends);
                 socket.emit('friend-request-accepted',true)
             }
         })
     })
 
+    //When the friend rejects the friend request then the user id of the user who sent the request is removed from friend's friend requests array
+    //friend-request-rejected-confirmation event will send confirmation to the friend who rejected the friend request
+    //reload-for-user-whoose-request-is-rejected event will reload the page for user whose friend request is rejected
     socket.on('remove-friend-request-from-user-database',function(userId,currentUserId,userhandleName){
         Users.findById(currentUserId,function(err,user){
             if(err){
               console.log(err);
             }else{
                 var index=user.friendRequest.indexOf(userId)
-                console.log("The index is",index)
+                // console.log("The index is",index)
                 if(index>-1){
                     user.friendRequest.splice(index,1);    
                 }
                 user.save();
-                console.log("aeengbvuiwnrbkornbk",user.friends);
+                // console.log(user.friends);
                 
                 socket.broadcast.to(userhandleName).emit('reload-for-user-whoose-request-is-rejected')
                 socket.emit('friend-request-rejected-confirmation',true)
@@ -561,7 +589,10 @@ io.on('connect',function(socket){
 
     /****Socket.io code for sending friend request ends here****/
 
-
+    /****Socket.io code for calling starts here****/
+    //This event will call other friends
+    //could-not-connect-call event will be emitted if their is an error or the friend is offline i.e. has no socket.id
+    //If the user is online then enter-call event will be emitted which will open the video call in a new tab
    socket.on('calling-user',function(userHandlename,currentHandlename){
        Users.findOne({handlename:userHandlename},function(err,user){
            if(err){
@@ -571,52 +602,61 @@ io.on('connect',function(socket){
                if(!user.socketId){
                 socket.emit('could-not-connect-call','Could not connect call as the user is offline');
                }else{
-                   var callId=uuidv4();
-                   callIds.create({callId:callId});
-                   socket.emit('enter-call',userHandlename,currentHandlename,callId)
-                //    socket.broadcast.to(user.handlename).emit('recieving-call',userHandlename,currentHandlename,callId)
+                    var callId=uuidv4();
+                    //Call id will be saved in callIds model
+                    callIds.create({callId:callId});
+                    socket.emit('enter-call',userHandlename,currentHandlename,callId)
+                    //socket.broadcast.to(user.handlename).emit('recieving-call',userHandlename,currentHandlename,callId)
                }
            }
        })
    })
 
-   socket.on('joined-call',function(callId,peerId,name,recieverHandlename,callerHandlename){
-    console.log("Join call on event",socket.id)
-       socket.join(callId);
-       var numberOfUsers=io.sockets.adapter.rooms.get(callId).size;
-       //Send reciever call alert after the caller has joined th call
-       if(numberOfUsers==1){
-           console.log(recieverHandlename)
-           socket.on('make-the-recieving-call-event-emit',function(){
-            socket.broadcast.to(recieverHandlename).emit('recieving-call',recieverHandlename,callerHandlename,callId)
-           })
-       
-       }
-       if(numberOfUsers<=2){
-        socket.broadcast.to(callId).emit("user-connected", peerId,name);
-       }else{
-           socket.emit('limit-exceded-in-call-alert');
-       }
-       
-       
-       socket.on("message", function(message){
-        io.to(callId).emit("createMessage", message);
-      });
-
-       socket.on('disconnect',function(){
-        console.log("User disconnected");
-        if(!io.sockets.adapter.rooms.get(callId)){
-            //Remove callId from callIds collection as call has no one
-            callIds.deleteOne({callId:callId});
+    //This event is listened whenever someone joins a call
+    //limit-exceded-in-call-alert will be emitted when numberOfUser becomes more than 2
+    //user-connected event will broadcast to all other socket in the room that a new socket has joined i.e. emitted to all other in the room when a new user has joined room
+    socket.on('joined-call',function(callId,peerId,name,recieverHandlename,callerHandlename){
+        // console.log("Join call on event",socket.id)
+        socket.join(callId);
+        //The variable stores the number of sockets who are currently in the call once the socket is disconnected it will be removed from the call i.e. no longer associated with it
+        var numberOfUsers=io.sockets.adapter.rooms.get(callId).size;
+        //Send reciever call alert after the caller has joined the call
+        if(numberOfUsers==1){
+            // console.log(recieverHandlename)
+            //This event will be listened when the caller joins the call 
+            socket.on('make-the-recieving-call-event-emit',function(){
+                //This event will send notification about the call to the reciever of the call
+                socket.broadcast.to(recieverHandlename).emit('recieving-call',recieverHandlename,callerHandlename,callId)
+            })
         }
         if(numberOfUsers<=2){
-            socket.broadcast.to(callId).emit("user-disconnected", peerId,name);
-        }   
-      })
+            //This event will be emitted whenever the caller or reciever joins the call  
+            socket.broadcast.to(callId).emit("user-connected", peerId,name);
+        }else{
+           socket.emit('limit-exceded-in-call-alert');
+        }
+       //This event will send the message to all the people in call
+        socket.on("message", function(message){
+            io.to(callId).emit("createMessage", message);
+        });
+
+        socket.on('disconnect',function(){
+            // console.log("User disconnected");
+            if(!io.sockets.adapter.rooms.get(callId)){
+                //Remove callId from callIds collection as call has no one
+                callIds.deleteOne({callId:callId});
+            }
+            //THis event is broadcasted to all other user in the call when a user leaves the call
+            if(numberOfUsers<=2){
+                socket.broadcast.to(callId).emit("user-disconnected", peerId,name);
+            }   
+        })
 
    })
    
+   //This event is emitted to when the reciever rejects the call
    socket.on('decline-call',function(callId){
+       //This event is broadcasted to the caller who is in the call that the call is decilned
        socket.broadcast.to(callId).emit('call-declined-by-reciever')
    })
 

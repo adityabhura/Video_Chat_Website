@@ -1,3 +1,4 @@
+//Notification sound
 function playAudio(){
     document.getElementById('chatAudio').play();
 }
@@ -14,10 +15,11 @@ var peer = new Peer(undefined, {
     port: portForPeer
 });
 
-let myVideoStream;
+var myVideoStream;
 
+//This will add id to the video tag
 function addIdToVideo(video,name){
-    console.log("Adding id",name)
+    // console.log("Adding id",name)
     var id=document.createAttribute('id')
     id.value=name;
     video.setAttributeNode(id);
@@ -27,19 +29,19 @@ function addIdToVideo(video,name){
 }
 
  //If the the metadata is loaded completely after that our video starts to play i.e. our camera becomes on
-var addVideoStream = (videoDiv,video, stream) => {
+ //This will add video and div to the video-grid tag
+var addVideoStream = function(videoDiv,video, stream)  {
     video.srcObject = stream;
-    
-    video.addEventListener('loadedmetadata', () => {
+    video.addEventListener('loadedmetadata', function() {
         video.play();
     })
     videoGrid.append(videoDiv);
     videoDiv.append(video);
-    console.log("Hehe",video)
+    // console.log("Hehe",video)
 };
 
-var connectToNewUser = (userId, stream,currentName) => {
-  console.log("Connecting to new user",stream);
+var connectToNewUser =  function(userId, stream,currentName){
+//   console.log("Connecting to new user",stream);
   //This function will call a user with userId passed and it will pass the stream to that user
     var call = peer.call(userId, stream);
     var videoDiv=document.createElement('div');
@@ -47,56 +49,39 @@ var connectToNewUser = (userId, stream,currentName) => {
     var h1=document.createElement('h1');
     var conn=peer.connect(userId)
     var userName;
-
-
-    //THis events does that when we call this user we're gonna send them 
-    //our video stream and when they send us back their video 
-    //stream we are gonna get this event here called the 
-    //stream which is going to take their video stream so 
-    call.on('stream', userDataStream => {
-        console.log("Adding video stream",userDataStream)
-        //We are taking stream from the other user that we are calling and adding it to out own custom video element on our page
+    
+    //Callback will give us the stream of the user who we called above // `userDataStream` is the MediaStream of the remote peer.
+    call.on('stream', function(userDataStream)  {
+        // console.log("Adding video stream",userDataStream)
+        //We are taking stream from the other user that we are calling and adding it to  video element on our page
         addVideoStream(videoDiv,video,userDataStream);
     })
 
-    //Whenever someone leaves the video call we want to remove their video so we use the following code
+    //Whenever someone leaves the video call we will remove their video and video div
     call.on('close',function(){
-        console.log("removing User at",new Date())
+        // console.log("removing User at",new Date())
         videoDiv.remove();
         video.remove();
     })
    
     conn.on('open', function() {
-        // Receive messages
+        // Receive data
         conn.on('data', function(data) {
             userName=data;
-            console.log('Received', data);
+            // console.log('Received', data);
             addIdToVideo(video,userName)
         });
-
-        // Send messages
+        // Send data
         conn.send(currentName);    
         })
-    
-    
     peer[userId]=call;
-    // peer[userId]=conn;
 }
 
-//coneecting our video
-//stream is out audio and video
-
-// socket.on('user-limit',function(limit){
-//     if(limit){
-//         window.location.href = "/";
-//     }
-// })
-
-peer.on('open', id => {
-    console.log("Opening peer")
+//Emitted when a connection to the PeerServer is established.
+peer.on('open', function(id) {
+    // console.log("Opening peer",id)
     socket.emit('joined-call',callId,id,name,recieverHandlename,callerHandlename);
 });
-// var conn = peer.connect('dest-peer-id');
 
 navigator.mediaDevices.getUserMedia({
     video: true,
@@ -110,43 +95,47 @@ navigator.mediaDevices.getUserMedia({
     myVideoStream = stream;
     addVideoStream(myVideoDiv,myVideo, stream);
     addIdToVideo(myVideo,currentName);
-    console.log("Tik TIk")
-    //When someone tries to call us we will send our stream through it i.e. send get user stream from 1st user and send stream of 2nd user to 1st user
-    peer.on('call', call => {
+    // console.log("Tik TIk")
+    //When someone tries to call us we will send our stream through it i.e. get user stream from 1st user and send stream of 2nd user to 1st user
+    peer.on('call', function(call) {
+        //Answering the call by sending out stream 
         call.answer(stream)
-        console.log("answering",stream)
+        // console.log("answering",stream)
         var videoDiv=document.createElement('div');
         var video = document.createElement('video');
         var userName;
+
         //the callback of the connection event will both provide a DataConnection object. This object will allow you to send and receive data
         peer.on('connection', function(conn) {  
             //Emitted when the connection is established and ready-to-use.     
             conn.on('open', function() {
-                console.log('conn open');
+                // console.log('conn open');
                 // Sends data to the user to which we are trying to connect i.e. the 1st user
                 conn.send(currentName);
-                //Recieve data from user to whom we are answering i.e. to 1st user
+                //Recieve data from user to whom we are answering i.e. the 1st user
                 conn.on('data', function(data) {
                     userName=data;
-                    console.log("Received",name);
+                    // console.log("Received",name);
                     addIdToVideo(video, userName);
                 });
             });
         });
         
-        call.on('stream', userDataStream => {
-            console.log("YAHA SE KAR RAHA HU",call)
+        //Recieve video stream from the user whom we are answering
+        call.on('stream', function(userDataStream){
+            //Add video stream in html of the user whom we are answering
             addVideoStream(videoDiv,video, userDataStream)
         })
+        //Removing video div and video tag of the user who we were anwering when he leaves
         call.on('close',function(){
-            console.log("removing User 1")
+            // console.log("removing User 1")
             videoDiv.remove();
             video.remove();
         })
     })
 
-
-    socket.on('user-connected', (userId,name) => {
+    //This event is listened whenever a new user joins
+    socket.on('user-connected', function(userId,name){
         okButton.innerHTML="OK";
         okButton.style.display="block";
         noButton.style.display="none";
@@ -156,11 +145,12 @@ navigator.mediaDevices.getUserMedia({
             modal.style.display="none";
         }
     // window.alert(name +" joined")
-      console.log("User connected with userId",userId,stream)
+    //   console.log("User connected with userId",userId,stream)
         connectToNewUser(userId, stream,currentName);
     })
 
-    socket.on('user-disconnected', (userId,name) => {
+    //This event is listened whenever a new user leaves
+    socket.on('user-disconnected', function(userId,name)  {
         okButton.innerHTML="YES";
         noButton.innerHTML="NO";
         okButton.style.display="block";
@@ -176,7 +166,7 @@ navigator.mediaDevices.getUserMedia({
         // if(leave){
         //     window.close()
         // }     
-        console.log("User disconnected with userId",userId,"at",new Date()); 
+        // console.log("User disconnected with userId",userId,"at",new Date()); 
         connectToNewUser(userId,stream,name); 
       })
 }).catch(function(err){
@@ -185,28 +175,29 @@ navigator.mediaDevices.getUserMedia({
 })
 
 
-
+//Sends messages typed when enter is clicked
 var text = document.getElementById('chat_message');
-    $('html').keydown(e => {
+    $('html').keydown(function(e){
         var messageText=text.value.trim();
         if (e.which == 13 && messageText.length !== 0) {
             socket.emit('message', {text:messageText,name:name});
-            console.log(text.value);
+            // console.log(text.value);
             text.value='';
         }
     });
 
-    socket.on('createMessage', function(message) {
-        var time=getTime();
-        $('ul').append(`<li class="message" style="width: 90%;word-wrap: break-word;"><span><h3 style="display:inline-block;margin:0%;font-weight: 450;">${message.name}</h3></span><p style="display:inline-block;margin:0%;padding-left:2rem">${time}</p><h5 style="margin:0%; font-weight: 400;">${message.text}</h5></li>`)
-        if(chatDiv.style.display==="none" || !chatDiv.style.display){
-            playAudio();
-            chatDot.style.display="block";
-        }
-        scrollToBottom();
-    })
+//This event will add message in the chat box when someone sends the message
+socket.on('createMessage', function(message) {
+    var time=getTime();
+    $('ul').append(`<li class="message" style="width: 90%;word-wrap: break-word;"><span><h3 style="display:inline-block;margin:0%;font-weight: 450;">${message.name}</h3></span><p style="display:inline-block;margin:0%;padding-left:2rem">${time}</p><h5 style="margin:0%; font-weight: 400;">${message.text}</h5></li>`)
+    if(chatDiv.style.display==="none" || !chatDiv.style.display){
+        playAudio();
+        chatDot.style.display="block";
+    }
+    scrollToBottom();
+})
 
-    var setPlayVideo =function () {
+var setPlayVideo =function () {
     var html = `
     <i  onclick="playStop()" class="stop fas fa-video-slash"></i>
     <h5  onclick="playStop()">Play Video</h5>`
@@ -222,7 +213,7 @@ var setStopVideo = function() {
 
 
 var playStop = function() {
-    let enabled = myVideoStream.getVideoTracks()[0].enabled;
+    var enabled = myVideoStream.getVideoTracks()[0].enabled;
     if(enabled){
         myVideoStream.getVideoTracks()[0].enabled = false;
         myVideo.style.backgroundColor="white"
@@ -235,25 +226,25 @@ var playStop = function() {
 }
 
 
-var scrollToBottom = () => {
-    let d = $('main_chat_window');
+var scrollToBottom = function() {
+    var d = $('main_chat_window');
     d.scrollTop(d.prop("scrollHeight"));
 }
-var setMuteButton = () => {
+var setMuteButton = function() {
     var html = `
     <i onclick="muteUnmute()" class="fas fa-microphone"></i>
     <h5 onclick="muteUnmute()">Mute</h5>`
     $('.main_mute_button').html(html);
 }
 
-var setUnmuteButton = () => {
+var setUnmuteButton = function() {
     var html = `
     <i onclick="muteUnmute()" class="unmute fas fa-microphone-slash"></i>
     <h5 onclick="muteUnmute()">Unmute</h5>`
     $('.main_mute_button').html(html);
 }
 
-var muteUnmute = () => {
+var muteUnmute = function() {
     var enabled = myVideoStream.getAudioTracks()[0].enabled;
     if(enabled){
         myVideoStream.getAudioTracks()[0].enabled = false;
@@ -280,6 +271,7 @@ if (i < 10) {i = "0" + i};
 return i;
 }
 
+//Get current time
 function getTime(){
     var today = new Date();
     var h = today.getHours();

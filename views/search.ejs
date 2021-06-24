@@ -222,7 +222,7 @@
                     foundUser.href="/profile/"+user.handlename
                     foundUser.innerHTML="<span><h5 style="+"display:inline-block"+">"+user.name + "</h5>"+"<h6 style="+"display:inline-block"+">("+user.handlename + ")</h6></span><br>";
                     resultList.append(foundUser);
-                    console.log(user.handlename)
+                    // console.log(user.handlename)
                 });
             })//Search by handlename      
            }else if(searchInput.placeholder=='Handle Name' && searchInput.value.trim().length>3){
@@ -238,7 +238,7 @@
                     foundUser.href="/profile/"+user.handlename
                     foundUser.innerHTML="<span><h5 style="+"display:inline-block"+">"+user.name + "</h5>"+"<h6 style="+"display:inline-block"+">("+user.handlename + ")</h6></span><br>";
                     resultList.append(foundUser);
-                    console.log(user.handlename)
+                    // console.log(user.handlename)
                 });
             })//Input value is less than 3
             }else if(searchInput.value.trim().length<=3){
@@ -261,12 +261,7 @@
 
         //As soon as we open the page this function will be called
         storeSocketIdInDb();
-
-        // socket.on('connect',function(){
-        //     console.log("Doing")
-        //     socket.emit('store-socket-id-in-db',currentUserId)
-        // })
-        
+  
         //This event will be listened whenever a friend eequest is recieved to the current user and then reloads the page
         socket.on('friend-request-alert',function(handlename){
             play();

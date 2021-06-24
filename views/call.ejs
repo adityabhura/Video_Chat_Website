@@ -56,13 +56,14 @@
 
     <div class="main row no-gutters" style="width: 100%;height: 100%;">
         <div class="main_left">
+            <!--Videos div-->
             <div class="main_videos">
-                <div id='video-grid'>
-                    
+                <div id='video-grid'>     
                 </div>
             </div>
-            <div class="main_controls">
-                
+            <!--Videos div end-->
+            <!--Buttons Div-->
+            <div class="main_controls">           
                 <div class="main_controls_block">
                     <div class="main_controls_time">
                       <h2 id="time"></h2>
@@ -81,8 +82,7 @@
                     <div class="main_controls_button">
                         <a style="text-decoration: none;color:black" href="/leaveCall"><i class="fas fa fa-phone" style="transform: rotateZ(224deg);"></i></a>
                         <a style="text-decoration: none;color:black" href="/leaveCall"><h5>Leave</h5></a>
-                    </div>
-                    
+                    </div>    
                 </div>
 
                 <div class="main_controls_block">
@@ -92,31 +92,31 @@
                         <div id="chat-dot"></div>
                     </div>
                 </div>
-
             </div>
+            <!--Buttons Div end-->
         </div>
 
 
         <div class="main_right">
+            <!--Chat Box div-->
             <div id="chat_div">
                 <div class="main_header">
                     <h1>Chats</h1>
                 </div>
                 <div class="main_chat_window">
                     <ul class="messages">
-    
                     </ul>
                 </div>
                 <div class="main_message_container">
                     <input id="chat_message" type="text" placeholder="Type message here...">
                 </div>
-            </div>         
+            </div> 
+            <!--Chat Box div end-->        
         </div>
-
     </div>
 
     <script>
-        
+        //This event is listened when the reciever rejects the call
         socket.on('call-declined-by-reciever',function(){
             okButton.innerHTML="OK"
             okButton.style.display="block";
@@ -127,6 +127,7 @@
            }     
         })
 
+        //This event is listened when the people in the call are more than 2 
         socket.on('limit-exceded-in-call-alert',function(){
             okButton.innerHTML="OK"
             okButton.style.display="block";
@@ -134,12 +135,12 @@
            okButton.onclick=function(){
             window.location.href="/abcdefghijklmnopqrstuvwyz";
            }  
-            // window.alert('You are already on this call')
-            
+            // window.alert('You are already on this call')    
         })
     </script>
 
     <script>
+        //Script for showing and hiding chat box
         var rightDiv=document.getElementsByClassName("main_right");
         var chatDiv=document.getElementById("chat_div");
         var chatDot=document.getElementById("chat-dot");

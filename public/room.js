@@ -7,7 +7,6 @@ var videoGrid = document.getElementById('video-grid');
 var myVideo = document.createElement('video');
 var h=document.createElement('h1');
 var myVideoDiv=document.createElement('div');
-var count=0;
 var participants=[];
 myVideo.muted = true;
 
@@ -19,8 +18,9 @@ var peer = new Peer(undefined, {
 
 let myVideoStream;
 
+//Add id to my video element
 function addIdToMyVideo(video,h1,name){
-    console.log("Adding id",name,video)
+    // console.log("Adding id",name,video)
     var id=document.createAttribute('id')
     id.value=name;
     video.setAttributeNode(id);
@@ -30,22 +30,22 @@ function addIdToMyVideo(video,h1,name){
 
 }
 
- //If the the metadata is loaded completely after that our video starts to play i.e. our camera becomes on
-var addMyVideoStream = (videoDiv,video, stream) => {
-
+//Add our video div and video element in video-grid div
+//If the the metadata is loaded completely after that our video starts to play i.e. our camera becomes on
+var addMyVideoStream = function(videoDiv,video, stream) {
     video.srcObject = stream;
-    video.addEventListener('loadedmetadata', () => {
+    video.addEventListener('loadedmetadata', function() {
         video.play();
     })
     videoDiv.append(video);
     videoGrid.append(videoDiv);
 };
 
-var addOtherVideoStream = (videoDiv,video,h1, stream,peerId) => {
-    count++;
-    console.log("Yehi chaiye pklease dedo",peerId)
+//Add video div and video element of others in video-grid div and also add id to video element 
+var addOtherVideoStream = function(videoDiv,video,h1, stream,peerId) {
+    // console.log("Yehi chaiye pklease dedo",peerId)
     video.srcObject = stream;
-    video.addEventListener('loadedmetadata', () => {
+    video.addEventListener('loadedmetadata', function() {
         video.play();
     })
     var videoId=document.createAttribute('id');
@@ -55,10 +55,9 @@ var addOtherVideoStream = (videoDiv,video,h1, stream,peerId) => {
     videoDiv.append(video);
     h1.innerHTML=peerId;
     video.parentNode.insertBefore(h1, video.nextSibling);
-    console.log("Yeh hai h1",h1,video,count)
-    return true;
 };
 
+//Add the name of user who joined in participants array
 function addUserToParticipantsList(data){
     data=JSON.stringify(data)
     participants.push(data);
@@ -66,59 +65,57 @@ function addUserToParticipantsList(data){
     updateUserListDiv();
 }
 
+//Remove the name of user from participants array who left the room
 function removeUserFromParticipantsList(data){
     var index=participants.indexOf(data);
     participants.splice(index,1);
     updateUserListDiv();
 }
 
-const unique = (value, index, self) => {
+const unique = function(value, index, self){
     return self.indexOf(value) === index
   }
 
-  function updateUserListDiv(){
-      var participantDiv=document.getElementById('participants');
-      participantDiv.innerHTML="";
-      var i=1;
-      participants.forEach(function(participant){
+//Update the participants array
+function updateUserListDiv(){
+    var participantDiv=document.getElementById('participants');
+    participantDiv.innerHTML="";
+    var i=1;
+    participants.forEach(function(participant){
         participantDiv.innerHTML=participantDiv.innerHTML + "<h2>"+i+". "+JSON.parse(participant).name+"</h2>"
-          console.log("hello");
-            i++;
+        i++;
       })  
-  }
+}
 
-var connectToNewUser = (userId, stream,userName) => {
+//
+var connectToNewUser = function(userId, stream,userName) {
     //This function will work if and only if username is there (not undefined)
     if(userName){
         okButton.innerHTML="OK";
         okButton.style.display="block";
         displayAlert(userName+" joined","Notification");
         playAudio();
-   
-  console.log("Connecting to new user");
-  //This function will call a user with userId passed and it will pass the stream to that user
-    var call = peer.call(userId, stream,{metadata:{name:name}});
-    var videoDiv=document.createElement('div')
-    var video = document.createElement('video');
-    var h1 = document.createElement('h1');
-    var conn=peer.connect(userId)
-    // var userName;
-    
-    //THis events does that when we call this user we're gonna send them 
-    //our video stream and when they send us back their video 
-    //stream we are gonna get this event here called the 
-    //stream which is going to take their video stream so 
-    call.on('stream', userVideoStream => {
-      console.log("Adding video stream",call,call.peer)
-       //We are taking stream from the other user that we are calling and adding it to out own custom video element on our page
-         var x=addOtherVideoStream(videoDiv,video, h1,userVideoStream,userName);
-         console.log(videoDiv,video, h1,userVideoStream,userName)
-         addUserToParticipantsList({peerId:call.peer,name:userName})
-    })
+        //   console.log("Connecting to new user");
+        //This function will call a user with userId passed and it will pass the stream to that user/peerId
+        var call = peer.call(userId, stream,{metadata:{name:name}});
+        var videoDiv=document.createElement('div')
+        var video = document.createElement('video');
+        var h1 = document.createElement('h1');
+        var conn=peer.connect(userId)
 
-    //Whenever someone leaves the video call we want to remove their video so we use the following code
+    
+        //Callback will give us the stream of the user who we called above // `userDataStream` is the MediaStream of the remote peer.
+        call.on('stream', function(userVideoStream)  {
+            // console.log("Adding video stream",call,call.peer)
+            //We are taking stream from the other user that we are calling and adding it to out own custom video element on our page
+            addOtherVideoStream(videoDiv,video, h1,userVideoStream,userName);
+            // console.log(videoDiv,video, h1,userVideoStream,userName)
+            addUserToParticipantsList({peerId:call.peer,name:userName})
+        })
+
+    //Whenever someone leaves the video call we want to remove their video
     call.on('close',function(){
-        console.log("removing User at",new Date())
+        // console.log("removing User at",new Date())
         removeUserFromParticipantsList({peerId:call.peer,name:userName})
         okButton.innerHTML="OK";
         okButton.style.display="block";
@@ -133,20 +130,20 @@ var connectToNewUser = (userId, stream,userName) => {
     }  
 }
 
-//coneecting our video
-//stream is out audio and video
-
+//If number of user in room will be more than 6 then limit will be true 
 socket.on('user-limit',function(limit){
     if(limit){
         window.location.href = "/";
     }
 })
 
-peer.on('open', id => {
-    console.log("Opening peer")
+//Emitted when a connection to the PeerServer is established.
+peer.on('open', function(id){
     socket.emit('join-room', ROOM_ID, id,name);
 });
 
+//coneecting our video
+//stream is out audio and video
 navigator.mediaDevices.getUserMedia({
     video: true,
     audio: true
@@ -156,22 +153,25 @@ navigator.mediaDevices.getUserMedia({
     myVideoStream = stream;
     addMyVideoStream(myVideoDiv,myVideo, stream);
     addIdToMyVideo(myVideo,h,currentName);
-    console.log("Tik TIk")
 
     //When someone tries to call us we will send our stream through it
-    peer.on('call', call => {   
+    peer.on('call', function(call) {   
         var currentName=name;
+        //Answering the call by sending out stream 
         call.answer(stream)
         var videoDiv=document.createElement('div');
         var video = document.createElement('video');
         var h1=document.createElement('h1')
-        call.on('stream', userVideoStream => {
-            console.log("Adding incoming video stream",call,userVideoStream)
-            var x=addOtherVideoStream(videoDiv,video,h1, userVideoStream,call.options.metadata.name);
+        //Recieve video stream from the user whom we are answering
+        call.on('stream', function(userVideoStream) {
+            // console.log("Adding incoming video stream",call,userVideoStream)
+            //Add video stream in html of the user whom we are answering
+            addOtherVideoStream(videoDiv,video,h1, userVideoStream,call.options.metadata.name);
             addUserToParticipantsList({peerId:call.peer,name:call.options.metadata.name})
         })
+        //Removing video div and video tag of the user who we were anwering when he leaves
         call.on('close',function(){
-            console.log("removing User 1",video.nextElementSibling);
+            // console.log("removing User",video.nextElementSibling);
             removeUserFromParticipantsList({peerId:call.peer,name:call.options.metadata.name})
             okButton.innerHTML="OK";
             okButton.style.display="block";
@@ -183,13 +183,15 @@ navigator.mediaDevices.getUserMedia({
         })
     })
 
-    socket.on('user-connected', (userId,userName) => {
-      console.log("User connected with userId",userId,userName)
+    //This event is listened whenever a new user joins
+    socket.on('user-connected', function(userId,userName){
+    //   console.log("User connected with userId",userId,userName)
         connectToNewUser(userId, stream,userName);
     })
 
-    socket.on('user-disconnected', (userId) => {
-        console.log("User disconnected with userId",userId,"at",new Date());    
+    //This event is listened whenever a new user leaves
+    socket.on('user-disconnected', function(userId){
+        // console.log("User disconnected with userId",userId,"at",new Date());    
         connectToNewUser(userId, stream); 
       })
 }).catch(function(err){
@@ -263,11 +265,11 @@ function displayChats(){
 
 
 var text = document.getElementById('chat_message');
-    $('html').keydown(e => {
+    $('html').keydown(function(e) {
         var messageText=text.value.trim();
         if (e.which == 13 && messageText.length !== 0) {
             socket.emit('message', {text:messageText,name:name});
-            console.log(text.value);
+            // console.log(text.value);
             text.value='';
         }
     });
@@ -311,25 +313,25 @@ var playStop = function() {
 }
 
 
-var scrollToBottom = () => {
+var scrollToBottom = function() {
     let d = $('main_chat_window');
     d.scrollTop(d.prop("scrollHeight"));
 }
-var setMuteButton = () => {
+var setMuteButton = function() {
     var html = `
     <i onclick="muteUnmute()" class="fas fa-microphone"></i>
     <h5 onclick="muteUnmute()">Mute</h5>`
     $('.main_mute_button').html(html);
 }
 
-var setUnmuteButton = () => {
+var setUnmuteButton = function() {
     var html = `
     <i onclick="muteUnmute()" class="unmute fas fa-microphone-slash"></i>
     <h5 onclick="muteUnmute()">Unmute</h5>`
     $('.main_mute_button').html(html);
 }
 
-var muteUnmute = () => {
+var muteUnmute = function() {
     var enabled = myVideoStream.getAudioTracks()[0].enabled;
     if(enabled){
         myVideoStream.getAudioTracks()[0].enabled = false;

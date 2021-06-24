@@ -191,7 +191,7 @@
                         <%if(!currentUser.friendRequest.length){%>
                             <p style="color: #007bff;">No New Friend Request</p> 
                         <%}else{%>
-                            <%=currentUser.friendRequest.length%> Friend Requests Pending
+                            <p style="color: #007bff;"><%=currentUser.friendRequest.length%> Friend Requests Pending</p>
                         <%}%>
                 </div>  
             </div>
@@ -296,11 +296,6 @@
         //As soon as we open the page this function will be called
         storeSocketIdInDb();
 
-        // socket.on('connect',function(){
-        //     console.log("Doing")
-        //     socket.emit('store-socket-id-in-db',currentUserId)
-        // })
-        
         //This event will be listened whenever a friend eequest is recieved to the current user and then reloads the page
         socket.on('friend-request-alert',function(handlename){
             play();

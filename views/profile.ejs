@@ -306,12 +306,7 @@
 
         //As soon as we open the page this function will be called
         storeSocketIdInDb();
-
-        // socket.on('connect',function(){
-        //     console.log("Doing")
-        //     socket.emit('store-socket-id-in-db',currentUserId)
-        // })
-        
+  
         //This event will be listened whenever a friend eequest is recieved to the current user and then reloads the page
         socket.on('friend-request-alert',function(handlename){
             play();
