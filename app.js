@@ -63,11 +63,11 @@ app.use(express.static(__dirname + "/public"))
 
 
 
-if (process.env.NODE_ENV === "development") {
-    console.log("Development");
+
+    // console.log("Development");
     var portForPeer=3000
     var portUsing=3000
-  }
+
   if (process.env.NODE_ENV === "production") {
     console.log("Production");
     var portUsing=process.env.PORT;
