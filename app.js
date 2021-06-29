@@ -65,8 +65,8 @@ app.use(express.static(__dirname + "/public"))
 
 
     // console.log("Development");
-    var portForPeer=3000
-    var portUsing=3000
+    var portForPeer=3000;
+    var portUsing=3000;
 
   if (process.env.NODE_ENV === "production") {
     console.log("Production");
